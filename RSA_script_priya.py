@@ -2,9 +2,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.stats as stats
 
-# File path for audio data
+# File path for audio data, transpose in preparation for correlation
 es_spect = np.load('/tigress/pnaphade/es_spect.npy')
-'''
+es_spect = es_spect.T
+
 # File path for neural data
 masked_data_dir = '/tigress/jamalw/Eternal_Sunshine/scripts/rois/masked_data/'
 
@@ -57,44 +58,61 @@ music_A1_corr = np.corrcoef(music_A1_prepped)
 music_rA1_corr = np.corrcoef(music_rA1_prepped)
 no_music_A1_corr = np.corrcoef(no_music_A1_prepped)
 no_music_rA1_corr = np.corrcoef(no_music_rA1_prepped)
-'''
 
-# Correlate the audio data across time
-audio_corr = np.corrcoef(es_spect.T)
 
-audio_corr_num = audio_corr[~np.isnan(audio_corr)]
-nan_idx_x = np.asarray(np.where(np.isnan(audio_corr))[0])
-nan_idx_y = np.asarray(np.where(np.isnan(audio_corr))[1])
+# Figure out which rows in the spectrogram have zero variance (results in nans in correlation)
+zero_var_rows = []
+for i in range(6452):
+	if np.var(es_spect[i, 4:6431]) == 0 :
+		zero_var_rows.append(i)
 
-#fig = plt.figure(figsize=(15, 5))
-fig, ax = plt.subplots()
-ax.plot(np.asarray(nan_idx_x), np.asarray(nan_idx_y), 'bo', markersize=1)
-plt.show()
+zero_var_rows = np.asarray(zero_var_rows)
+#print(zero_var_rows)
+
+
+# Function for chopping off desired values from a symmetric matrix
+def chop(mat, idx_lo, idx_hi) :
+	return mat[idx_lo : idx_hi, idx_lo : idx_hi]
+
+
+# Chop off the appropriate values
+es_spect_chop = es_spect[4 : 6431, :] 
+
+
+# Correlate the chopped audio data across time
+audio_corr_chop = np.corrcoef(es_spect_chop)
+	
+
+# Chop the neural matrices to match shape with the audio RSM
+music_A1_corr_chop = chop(music_A1_corr, 4, 6431)
+music_rA1_corr_chop = chop(music_rA1_corr, 4, 6431)
+no_music_A1_corr_chop = chop(no_music_A1_corr, 4, 6431)
+no_music_rA1_corr_chop = chop(no_music_rA1_corr, 4, 6431)
 
 '''
 # Visualize the neural representational similarity matrices
 fig1 = plt.figure(1, figsize=(10, 10))
 
 ax = plt.subplot(2, 2, 1)
-im = ax.imshow(music_A1_corr, cmap='jet')
+im = ax.imshow(music_A1_corr_chop, cmap='jet')
 ax.set_title("Music Bilateral A1 RSM")
 ax.set_xlabel("TR")
 ax.set_ylabel("TR")
 
 ax = plt.subplot(2, 2, 2)
-im = ax.imshow(music_rA1_corr, cmap='jet')
+im = ax.imshow(music_rA1_corr_chop, cmap='jet')
 ax.set_title("Music Right A1 RSM")
 ax.set_xlabel("TR")
 ax.set_ylabel("TR")
 
 ax = plt.subplot(2, 2, 3)
-im = ax.imshow(no_music_A1_corr, cmap='jet')
+im = ax.imshow(no_music_A1_corr_chop, cmap='jet')
 ax.set_title("No Music Bilateral A1 RSM")
 ax.set_xlabel("TR")
 ax.set_ylabel("TR")
 
 ax = plt.subplot(2, 2, 4)
-im = ax.imshow(no_music_rA1_corr, cmap='jet')
+im = ax.imshow(no_music_rA1_corr_chop, cmap='jet')
 ax.set_title("No Music Right A1 RSM")
 ax.set_xlabel("TR")
 ax.set_ylabel("TR")
@@ -107,7 +125,7 @@ fig1.colorbar(im, cax=cbar_ax)
 # Visualize the audio representational similarity matrix
 fig2 = plt.figure(2)
 ax = plt.subplot()
-im = ax.imshow(audio_corr, cmap='jet')
+im = ax.imshow(audio_corr_chop, cmap='jet')
 ax.set_title("Audio RSM")
 ax.set_xlabel("TR")
 ax.set_ylabel("TR")
@@ -115,12 +133,12 @@ fig2.subplots_adjust(right = 0.8)
 cbar_ax = fig2.add_axes([0.85, 0.15, 0.05, 0.7])
 fig2.colorbar(im, cax=cbar_ax)
 plt.show()
-
+'''
 
 # Isolate the upper triangles of the RSMs for correlation
-triu_idx = np.triu_indices(6452)
-audio_triu = audio_corr[triu_idx]
-neural_mat = np.asarray([music_A1_corr, music_rA1_corr, no_music_A1_corr, no_music_rA1_corr])
+triu_idx = np.triu_indices(audio_corr_chop.shape[0])
+audio_triu = audio_corr_chop[triu_idx]
+neural_mat = np.asarray([music_A1_corr_chop, music_rA1_corr_chop, no_music_A1_corr_chop, no_music_rA1_corr_chop])
 neural_triu_mat = np.zeros((4, audio_triu.shape[0]))
 for i in range(4) :
 	neural_triu_mat[i]  = neural_mat[i][triu_idx]
@@ -128,12 +146,14 @@ for i in range(4) :
 
 # Calculate the correlations between the audio RSM and each neural RSM
 roi_labels = ["Music Bilateral A1", "Music Right A1", "No Music Bilateral A1", "No Music Right A1"]
-RSM_corrs = np.zeros((2, 4))
+RSM_corrs = np.zeros((1, 4))
 for i in range(4) :
 
 	# Compute Pearson correlation
-	RSM_corrs[0, i] = stats.pearsonr(neural_triu_mat[i], audio_triu)[0]
+	RSM_corrs[0, i] = stats.spearmanr(neural_triu_mat[i], audio_triu)[0]
 
 	# Compute Spearman correlation
-	RSM_corrs[1, i] = stats.spearmanr(neural_triu_mat[i], audio_triu)[0]
-'''
+	#RSM_corrs[1, i] = stats.spearmanr(neural_triu_mat[i], audio_triu)[0]
+
+print(RSM_corrs)
+
