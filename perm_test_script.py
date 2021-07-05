@@ -5,35 +5,65 @@ import seaborn as sns
 
 # Load in the data
 audio_corr = np.load("audio_corr_chop.npy")
-neural_triu_mat = np.load("neural_triu_mat.npy")
-real_rvals = np.load("RSM_corrs.npy")[0, :]
+neural_mat = np.load("neural_mat.npy")
+real_rvals = np.load("RSM_avg_corrs.npy")
 
-# Number of permutations
-n_perms = 1000
 
-# Number of rois
+# Function for chopping off desired values from a symmetric matrix
+def chop(mat, idx_lo, idx_hi) :
+	return mat[idx_lo : idx_hi, idx_lo : idx_hi]
+
+# Variables for sliding window correlations
 n_rois = 4
-
-# Matrix for storing null distributions
-null_corrs = np.zeros((n_rois, n_perms))
+n_trs = audio_corr.shape[0]
+window_width = 30
+n_windows = n_trs - window_width
+n_perms = 1000
+null_corrs = np.zeros((n_rois, n_perms, n_windows))
 
 # Random generator for shuffling audio data
 rng = np.random.default_rng()
 
-for i in range(n_perms) :
+
+# Main loop
+for n in range(n_perms) :
 	
 	# Shuffle the columns of the audio RSM
 	rng.shuffle(audio_corr, axis=1)
 	
-	# Pull out the upper triangle for correlation
-	audio_triu_shuf = audio_corr[np.triu_indices(audio_corr.shape[0])]
-
-	# Compute the correlations between each ROI and the shuffled audio
-	for j in range(n_rois) :
+	# Progress	
+	print(f"Computing correlations for permutation {n+1} of {n_perms}")	
+	
+	for i in range(n_windows) :
+	
+		# Isolate the current window for the neural and audio RSMs
+		audio_win_shuf = chop(audio_corr, i, i+window_width)
+		neural_win_mat = np.zeros((n_rois, window_width, window_width))
+		for j in range(n_rois) :
+			neural_win_mat[j] = chop(neural_mat[j], i, i+window_width)
 		
-		print("Computing correlation %d of %d" % (j+1+(i*n_rois), n_perms*n_rois))
-		null_corrs[j, i] = stats.pearsonr(neural_triu_mat[j], audio_triu_shuf)[0]
+			
+		# Pull out the upper triangles of the RSMs for correlation
+		triu_idx = np.triu_indices(window_width)
+		audio_win_triu_shuf = audio_win_shuf[triu_idx]
+		neural_win_triu_mat = np.zeros((n_rois, audio_win_triu_shuf.shape[0]))
+		for j in range(n_rois) :
+			neural_win_triu_mat[j] = neural_win_mat[j][triu_idx]
 
+	
+		# Compute the correlations between each ROI and the shuffled audio
+		for j in range(n_rois) :
+			null_corrs[j, n, i] = stats.pearsonr(neural_win_triu_mat[j], audio_win_triu_shuf)[0]
+
+
+# Average across windows to produce null distribution
+null_corrs_win_avg = np.mean(null_corrs, axis=2)
+
+# Calculate r_diff
+perm_means = np.mean(null_corrs_win_avg, axis=1)
+r_diff = real_rvals - perm_means
+print(f"r_perm values: {perm_means}")
+print(f"r_diff values: {r_diff}")
 
 
 # Plotting
@@ -44,7 +74,7 @@ roi_labels = ["Music Bilateral A1", "Music Right A1", "No Music Bilateral A1", "
 
 for i, ax in zip(np.arange(n_rois), axes) :
 
-	ax.hist(null_corrs[i, :], bins = 25)
+	ax.hist(null_corrs_win_avg[i, :], bins=25)
 	ax.set_title(roi_labels[i])
 	
 	# Plot the real r values in red for comparison
@@ -57,9 +87,3 @@ for i, ax in zip(np.arange(n_rois), axes) :
 		ax.set_ylabel("Count")
 	
 #plt.show()
-
-
-# Calculating r_diff
-
-r_diff = real_rvals - np.mean(null_corrs, axis=1)
-print(f"r_diff values: {r_diff}")
