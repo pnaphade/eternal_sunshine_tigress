@@ -61,10 +61,7 @@ es_spect  = np.hstack((spect_1_db_smooth, spect_2_db_smooth))
 
 
 # Display the spectrogram
-fig = plt.figure(1)
-ax = plt.subplot()
-ax.set(title="Eternal Sunshine Audio Spectrogram")
-spect = lb.display.specshow(es_spect, x_axis='time', y_axis='hz', sr=48000, ax=ax)
+fig, ax = plt.subplots()
+spect = lb.display.specshow(es_spect, x_axis='time', y_axis='hz', sr=48000, hop_length=48000, ax=ax)
 fig.colorbar(spect, ax=ax, format="%+2.f dB")
-plt.show()
-
+#plt.show()
