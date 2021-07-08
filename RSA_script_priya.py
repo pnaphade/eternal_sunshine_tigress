@@ -151,7 +151,6 @@ for i, ax in zip(np.arange(n_rois), axes) :
 	ax.set_title(roi_labels[i])
 	ax.set_ylim(0, 0.8)
 	ax.text(5050, 0.72, r'$r_{mean}$' + f" = {np.around(avg_corrs, decimals=4)[i]}")
-	#ax.text(0.9, 0.9, r"$r_mean}")# + str(np.around(avg_corrs, decimals=4)[i]))
 		
 	if i == 2 or i == 3 :
 		ax.set_xlabel("TR")
@@ -159,4 +158,4 @@ for i, ax in zip(np.arange(n_rois), axes) :
 	if i == 0 or i == 2 :
 		ax.set_ylabel("Neural-Audio Correlation")
 
-plt.show()
+#plt.show()
