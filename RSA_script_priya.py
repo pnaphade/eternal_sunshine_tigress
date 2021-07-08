@@ -78,7 +78,6 @@ no_music_rA1_corr_chop = chop(no_music_rA1_corr, 4, 6431)
 neural_mat = np.asarray([music_A1_corr_chop, music_rA1_corr_chop, no_music_A1_corr_chop, no_music_rA1_corr_chop])
 
 
-
 # Variables for sliding window correlations
 n_rois = 4
 n_trs = es_spect_chop.shape[0]
@@ -112,7 +111,6 @@ avg_corrs, avg_pvals = np.mean(RSM_corrs[:, 0, :], axis=1), np.mean(RSM_corrs[:,
 print(f"Neural-Audio Correlations: {np.around(avg_corrs, decimals=5)}")
 
 
-
 # Visualize the neural representational similarity matrices
 fig, axes = plt.subplots(2, 2, figsize=(10, 10))
 axes = axes.flatten()
@@ -121,7 +119,7 @@ roi_labels = ["Music Bilateral A1", "Music Right A1", "No Music Bilateral A1", "
 for i, ax in zip(np.arange(n_rois), axes) :
 
 	im = ax.imshow(neural_mat[i], cmap='jet')
-	ax.set_title(roi_labels[i] + " RSM")
+	ax.set_title(roi_labels[i])
 	
 	if i == 2 or i == 3 :
 		ax.set_xlabel("TR")
@@ -136,13 +134,11 @@ fig.colorbar(im, cax=cbar_ax)
 # Visualize the audio representational similarity matrix
 fig, ax = plt.subplots()
 im = ax.imshow(audio_corr_chop, cmap='jet')
-ax.set_title("Audio RSM")
 ax.set_xlabel("TR")
 ax.set_ylabel("TR")
 fig.subplots_adjust(right = 0.8)
-cbar_ax = fig.add_axes([0.85, 0.15, 0.05, 0.7])
-fig.colorbar(im, cax=cbar_ax)
-
+cbar_ax = fig.add_axes([0.80, 0.15, 0.05, 0.7])
+cbar = fig.colorbar(im, cax=cbar_ax)
 
 
 # Visualize the neural-audio correlations as a function of time
@@ -152,7 +148,7 @@ axes = axes.flatten()
 for i, ax in zip(np.arange(n_rois), axes) :
 
 	ax.plot(RSM_corrs[i, 0, :], linewidth=0.5)
-	ax.set_title(roi_labels[i] + " Sliding Window Correlations")
+	ax.set_title(roi_labels[i])
 	ax.set_ylim(0, 0.8)
 	
 	if i == 2 or i == 3 :
