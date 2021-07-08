@@ -18,11 +18,19 @@ n_rois = 4
 n_trs = audio_corr.shape[0]
 window_width = 30
 n_windows = n_trs - window_width
-n_perms = 1000
-null_corrs = np.zeros((n_rois, n_perms, n_windows))
+n_perms = 10
 
 # Random generator for shuffling audio data
 rng = np.random.default_rng()
+
+# Check for errors in parameters
+if n_perms <= 0 :
+	raise ValueError("Number of permutations must be greater than 0")
+
+if window_width > n_trs :
+	raise ValueError("Window width cannot exceed the length of the dataset")
+
+null_corrs = np.zeros((n_rois, n_perms, n_windows))
 
 
 # Main loop
@@ -69,7 +77,6 @@ print(f"r_diff values: {r_diff}")
 # Plotting
 fig, axes = plt.subplots(2, 2, figsize=(10, 10))
 axes = axes.flatten()
-fig.suptitle("Null Distributions for Neural-Audio RSM Correlation", fontweight="bold")
 roi_labels = ["Music Bilateral A1", "Music Right A1", "No Music Bilateral A1", "No Music Right A1"]
 
 for i, ax in zip(np.arange(n_rois), axes) :
@@ -87,3 +94,7 @@ for i, ax in zip(np.arange(n_rois), axes) :
 		ax.set_ylabel("Count")
 	
 #plt.show()
+
+# Function for chopping off desired values from a symmetric matrix
+def chop(mat, idx_lo, idx_hi) :
+	return mat[idx_lo : idx_hi, idx_lo : idx_hi]
