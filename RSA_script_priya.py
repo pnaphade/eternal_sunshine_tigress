@@ -110,12 +110,12 @@ avg_corrs, avg_pvals = np.mean(RSM_corrs[:, 0, :], axis=1), np.mean(RSM_corrs[:,
 # Print the results
 print(f"Neural-Audio Correlations: {np.around(avg_corrs, decimals=5)}")
 
+roi_labels = ["Music Bilateral A1", "Music Right A1", "No Music Bilateral A1", "No Music Right A1"]
+
 
 # Visualize the neural representational similarity matrices
 fig, axes = plt.subplots(2, 2, figsize=(10, 10))
 axes = axes.flatten()
-roi_labels = ["Music Bilateral A1", "Music Right A1", "No Music Bilateral A1", "No Music Right A1"]
-
 for i, ax in zip(np.arange(n_rois), axes) :
 
 	im = ax.imshow(neural_mat[i], cmap='jet')
@@ -150,11 +150,13 @@ for i, ax in zip(np.arange(n_rois), axes) :
 	ax.plot(RSM_corrs[i, 0, :], linewidth=0.5)
 	ax.set_title(roi_labels[i])
 	ax.set_ylim(0, 0.8)
-	
+	ax.text(5050, 0.72, r'$r_{mean}$' + f" = {np.around(avg_corrs, decimals=4)[i]}")
+	#ax.text(0.9, 0.9, r"$r_mean}")# + str(np.around(avg_corrs, decimals=4)[i]))
+		
 	if i == 2 or i == 3 :
 		ax.set_xlabel("TR")
 	
 	if i == 0 or i == 2 :
 		ax.set_ylabel("Neural-Audio Correlation")
 
-#plt.show()
+plt.show()
