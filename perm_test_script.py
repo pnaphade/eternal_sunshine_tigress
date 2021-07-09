@@ -18,7 +18,7 @@ n_rois = 4
 n_trs = audio_corr.shape[0]
 window_width = 30
 n_windows = n_trs - window_width
-n_perms = 10
+n_perms = 1000
 
 # Random generator for shuffling audio data
 rng = np.random.default_rng()
@@ -74,6 +74,12 @@ print(f"r_perm values: {perm_means}")
 print(f"r_diff values: {r_diff}")
 
 
+# Calculate z scores for real r values
+z_scores = np.zeros(4)
+for i, r, r_perm in zip(np.arange(4), real_rvals, perm_means) :
+	z_scores[i] = (r-r_perm)/np.std(null_corrs_win_avg, axis=1)[i]	
+
+
 # Plotting
 fig, axes = plt.subplots(2, 2, figsize=(10, 10))
 axes = axes.flatten()
@@ -86,6 +92,9 @@ for i, ax in zip(np.arange(n_rois), axes) :
 	
 	# Plot the real r values in red for comparison
 	ax.axvline(real_rvals[i], color="r")
+
+	# Add the z scores for the real r values
+	ax.text(0.7, 0.8, f"z = {np.around(z_scores[i], decimals=2)}", transform=ax.transAxes)
 	
 	if i  == 2 or i == 3 :
 		ax.set_xlabel("Correlation")
