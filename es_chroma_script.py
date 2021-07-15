@@ -22,8 +22,8 @@ chroma_2 = lb.feature.chroma_cqt(audio_mono_2)
 
 
 # Take absolute value and convert to dB
-chroma_1_db = chroma_1#lb.amplitude_to_db(chroma_1)
-chroma_2_db = chroma_2#lb.amplitude_to_db(chroma_2)
+chroma_1_db = lb.amplitude_to_db(chroma_1)
+chroma_2_db = lb.amplitude_to_db(chroma_2)
 
 
 # Sliding average to convert spectrogram or chromagram from samples to seconds
