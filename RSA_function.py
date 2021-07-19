@@ -82,7 +82,7 @@ def RSA(data_1, data_2, sliding_window=False, window_width=None) :
 
 		# Compute the Pearson correlation and p value
 		sliding_corrs[i], sliding_pvals[i]  = stats.pearsonr(win_1_triu, win_2_triu)
-		print(sliding_corrs.shape, sliding_pvals.shape)
+	
 	# Average the statistics over the windows
 	avg_corr, avg_pval = np.mean(sliding_corrs), np.mean(sliding_pvals)
 
