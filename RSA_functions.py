@@ -10,23 +10,16 @@ def RSA(data_1, data_2, sliding_window=False, window_width=None) :
 	Parameters
 	----------
     	data_1, data_2 (numpy.ndarray) :
-		The two datasets to be correlated. Data must be two dimensional, with rows
-		representing variables (ex: TRs) and columns representing variables (ex: voxel
-		responses).
+		The two datasets to be correlated. Data must be two dimensional, with rows representing variables (ex: TRs) and columns representing variables (ex: voxel responses).
 	sliding_window (bool, optional) : 
-		If sliding_window is False (default), the comparison of the RSMs will correlate
-		the entire upper triangles of the RSMs. Otherwise, the RSMs will be compared with
-		sliding window correlations, using a square window whose width is given by the
-		window_width parameter.
+		If sliding_window is False (default), the comparison of the RSMs will correlate the entire upper triangles of the RSMs. Otherwise, the RSMs will be compared with sliding window correlations, using a square window whose width is given by the window_width parameter.
 	window_width (int, optional) : 
 		The width in TRs of the sliding window used to correlate the RSMs.  
   
    	Returns
 	-------
     	results (tuple) :
-		A tuple containing both RSMs as two dimensional ndarrays, the between-RSM
-		correlation, the associated p-value, and the local correlations if 
-		sliding_window is True.	
+		A tuple containing both RSMs as two dimensional ndarrays, the between-RSM correlation, and the  associated p-value.	
 
 	"""
 
@@ -94,54 +87,8 @@ def RSA(data_1, data_2, sliding_window=False, window_width=None) :
 	avg_corr, avg_pval = np.mean(sliding_corrs), np.mean(sliding_pvals)
 
 	# Store results in tuple and return
-	results = (RSM_1, RSM_2, avg_corr, avg_pval, sliding_corrs)
+	results = (RSM_1, RSM_2, avg_corr, avg_pval)
 	return results
-
-
-
-def corr_prep(run1_data, run2_data, transpose=True) :
-	
-	"""
-	RSA prepreocessing for neural data. Averages across subjects, concatenates the runs,
-	and then transposes according the value of the parameter transpose.
-  
-	Parameters
-	----------
-	run1_data, run2_data (numpy.ndarray) :
-		The two runs of three dimensional data to be processed.
-
-	transpose (bool, optional) :
-		If tranpose is True (default), the returned matrix is transposed. Otherwise,
-		the original orientation of the first two dimensions is unchanged.
-
-   	Returns
-	-------
-	processed_data (numpy.ndarray) :
-		The processed data.
-	
-	"""
-
-	# Make sure we're working with data of the correct type and dimensionality
-	if not(isinstance(run1_data, np.ndarray)) or not(isinstance(run2_data, np.ndarray)) :
-		raise TypeError("Data must be a numpy ndarray")
-		
-	if run1_data.ndim != 3 or run2_data.ndim != 3 :
-		raise ValueError("Data must be 3 dimensional (voxels x time x subjects or time x voxels x subjects)")
-
-	# Average each run across subjects
-	run1_avg = np.mean(run1_data, axis=2)
-	run2_avg = np.mean(run2_data, axis=2)
-
-	# Concatenate the data across time
-	processed_data  = np.concatenate((run1_avg, run2_avg), axis=1)
-
-	# Check if the data needs to be transposed
-	if (transpose) :
-		processed_data = processed_data.T
-		return processed_data
-
-	return processed_data
-	
 
 
 def chop(mat, idx_lo, idx_hi) : 
@@ -155,8 +102,7 @@ def chop(mat, idx_lo, idx_hi) :
 		The matrix to be chopped. Must be two dimensional.
 
 	idx_low, idx_hi (int) : 
-		The indices describing the range of desired elements in both dimensions
-		 of the matrix.    	
+		The indices describing the range of desired elements in the both dimensions of the matrix.    	
 
    	Returns
 	-------
