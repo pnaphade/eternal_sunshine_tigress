@@ -5,7 +5,7 @@ from RSA_functions import RSA, corr_prep
 
 # Load in audio data, transpose in preparation for correlatio
 # Choose the chromagram this time
-es_spect = np.load("/tigress/pnaphade/results/es_chroma.npy")
+es_spect = np.load("/tigress/pnaphade/es_chroma_db.npy")
 es_spect = es_spect.T
 
 # Load in neural data
