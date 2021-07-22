@@ -2,10 +2,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.stats as stats
 from RSA_functions import RSA, corr_prep
+import os.path as path
+import pathlib
 
 # Load in audio data, transpose in preparation for correlatio
 # Choose the chromagram this time
-es_spect = np.load("/tigress/pnaphade/es_chroma_db.npy")
+es_spect = np.load("/tigress/pnaphade/Eternal_Sunshine/results/es_chroma.npy")
 es_spect = es_spect.T
 
 # Load in neural data
@@ -38,7 +40,6 @@ for dataset, i in zip(neural_prepped, np.arange(4)) :
 	neural_prepped[i] = dataset[4:6431, :]		
 
 
-
 # Perform the RSA
 corrs = np.zeros(4)
 sliding_corrs = []
@@ -61,6 +62,16 @@ RSMs[4] = results[1]
 
 # Convert sliding correlations into an ndarray
 sliding_corrs = np.asarray(sliding_corrs)
+
+# Save the between RSM correlations and RSMs
+corrs_path = pathlib.Path("/tigress/pnaphade/Eternal_Sunshine/results/RSM_corrs.npy")
+RSMs_path = pathlib.Path("/tigress/pnaphade/Eternal_Sunshine/results/RSMs.npy")
+	
+if not(corrs_path.exists()) :
+	np.save(corrs_path, corrs)
+
+if not(RSMs_path.exists()) :
+	np.save(RSMs_path, RSMs)
 
 
 

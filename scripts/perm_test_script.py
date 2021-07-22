@@ -1,18 +1,16 @@
 import numpy as np
 import scipy.stats as stats
 import matplotlib.pyplot as plt
-import seaborn as sns
+from RSA_functions import chop
 
 # Load in the data
-audio_corr = np.load("audio_corr_chop.npy")
-neural_mat = np.load("neural_mat.npy")
-real_rvals = np.load("RSM_avg_corrs.npy")
+results_dir = "/tigress/pnaphade/Eternal_Sunshine/results/"
+RSMs = np.load(results_dir + "RSMs.npy")
+neural_RSMs = RSMs[:4]
+audio_RSM = RSMs[4]
+real_rvals = np.load(results_dir + "RSM_corrs.npy")
 
-
-# Function for chopping off desired values from a symmetric matrix
-def chop(mat, idx_lo, idx_hi) :
-	return mat[idx_lo : idx_hi, idx_lo : idx_hi]
-
+'''
 # Variables for sliding window correlations
 n_rois = 4
 n_trs = audio_corr.shape[0]
@@ -103,7 +101,4 @@ for i, ax in zip(np.arange(n_rois), axes) :
 		ax.set_ylabel("Count")
 	
 #plt.show()
-
-# Function for chopping off desired values from a symmetric matrix
-def chop(mat, idx_lo, idx_hi) :
-	return mat[idx_lo : idx_hi, idx_lo : idx_hi]
+'''

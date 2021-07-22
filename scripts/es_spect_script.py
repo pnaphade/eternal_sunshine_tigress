@@ -7,7 +7,7 @@ import ffmpeg # support for opening mp3 files
 
 
 # Load in the movie audio
-audio, sample_rate = open_audio("/tigress/pnaphade/es_audio.mp3")
+audio, sample_rate = open_audio("/tigress/pnaphade/data/es_audio.mp3")
 #audio_path = "/tigress/pnaphade/es_audio.mp3"
 #audio, sample_rate = lb.load(audio_path, sr=48000, mono=False)
 
