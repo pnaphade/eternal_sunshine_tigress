@@ -74,7 +74,6 @@ if not(RSMs_path.exists()) :
 	np.save(RSMs_path, RSMs)
 
 
-
 # Plotting
 roi_labels = ["Music Bilateral A1", "Music Right A1", "No Music Bilateral A1", "No Music Right A1"]
 
