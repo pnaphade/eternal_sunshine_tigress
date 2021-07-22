@@ -1,1 +1,5 @@
 *.swp
+.RSA_script_priya.py.s*
+.perm_test_script.py.sw*
+.spectro_test.py.sw*
+scripts/__pycache__/
