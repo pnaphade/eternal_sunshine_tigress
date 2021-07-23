@@ -3,3 +3,5 @@
 .perm_test_script.py.sw*
 .spectro_test.py.sw*
 scripts/__pycache__/
+data/*
+results/*
