@@ -64,8 +64,10 @@ RSMs[4] = results[1]
 sliding_corrs = np.asarray(sliding_corrs)
 
 # Save the between RSM correlations and RSMs
-corrs_path = pathlib.Path("/tigress/pnaphade/Eternal_Sunshine/results/RSM_corrs.npy")
-RSMs_path = pathlib.Path("/tigress/pnaphade/Eternal_Sunshine/results/RSMs.npy")
+save_dir = "/tigress/pnaphade/Eternal_Sunshine/results/RSA/"
+roi = "A1"
+corrs_path = pathlib.Path(save_dir + roi + "_corrs.npy")
+RSMs_path = pathlib.Path(save_dir + roi + "_RSMs.npy")
 	
 if not(corrs_path.exists()) :
 	np.save(corrs_path, corrs)
