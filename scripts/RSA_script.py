@@ -2,72 +2,115 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.stats as stats
 from RSA_functions import RSA, corr_prep
-import os.path as path
-import pathlib
+import re
+from pathlib import Path
+import os
+import glob
 
-# Load in audio data, transpose in preparation for correlatio
-# Choose the chromagram this time
-es_spect = np.load("/tigress/pnaphade/Eternal_Sunshine/results/es_chroma.npy")
-es_spect = es_spect.T
+
+# Load in the audio features, transpose in preparation for correlation
+feat_dir = "/tigress/pnaphade/Eternal_Sunshine/results/RSA"
+feat_paths = glob.glob(os.path.join(feat_dir, "es*"))
+features = [np.load(path).T for path in feat_paths]
+
+# Pull out the labels of each feature from their filepaths using regex
+feat_labels = [re.search('es_(.+?).npy', path).group(1) for path in feat_paths]
 
 # Load in neural data
-masked_data_dir = "/tigress/jamalw/Eternal_Sunshine/scripts/rois/masked_data/"
-dir_endings = ["music/a1plus_run1_n12.npy", "music/a1plus_run2_n12.npy", "music/rA1_run1_n12.npy", "music/rA1_run2_n12.npy","no_music/a1plus_run1_n11.npy","no_music/a1plus_run2_n11.npy","no_music/rA1_run1_n11.npy","no_music/rA1_run2_n11.npy"]
+masked_dir = "/tigress/jamalw/Eternal_Sunshine/scripts/rois/masked_data/"
+runs = ["music/a1plus_run1_n12.npy", "music/a1plus_run2_n12.npy", "music/rA1_run1_n12.npy", "music/rA1_run2_n12.npy","no_music/a1plus_run1_n11.npy","no_music/a1plus_run2_n11.npy","no_music/rA1_run1_n11.npy","no_music/rA1_run2_n11.npy"]
+neural_runs = [np.load(masked_dir + run) for run in runs]
 
-neural_runs = []
-
-for ending in dir_endings :
-	neural_runs.append(np.load(masked_data_dir + ending))
-	
 
 
 # Prepare the neural data for correlation
 neural_prepped = []
-
-for run, i in zip(neural_runs, np.arange(4)) :
+for i in  np.arange(int(len(neural_runs)/2)) :
 	neural_prepped.append(corr_prep(neural_runs[2*i], neural_runs[2*i+1]))
 
-# Figure out which columns in the spectrogram have zero variance (results in nans in correlation)
-zero_var_cols = []
-for i in range(neural_prepped[0].shape[0]):
-	if np.var(es_spect[i, :]) == 0 :
-		zero_var_cols.append(i)
+# Figure out which rows in the features have zero variance (results in nans in correlation)
+n_rows = features[0].shape[0]
 
-# Chop off the appropriate values
-es_spect_chop = es_spect[4:6431, :] 
+# 2D list giving the zero variance rows in each feature
+rows = [[i for i in range(n_rows) if np.var(feature[i, :]) == 0] for feature in features]
 
-for dataset, i in zip(neural_prepped, np.arange(4)) : 
-	neural_prepped[i] = dataset[4:6431, :]		
+# For comparison, set the dictionary's values as the number zero variance rows in each feature
+n_zero_var_rows = [len(rows[i]) for i in np.arange(len(rows))]
+zero_var_rows = dict(zip(feat_labels, n_zero_var_rows))
+
+# Chop off the appropriate values in the features and neural data for consistency
+for i in np.arange(len(neural_prepped)) : 
+	features[i] = features[i][4:6431, :] 
+	neural_prepped[i] = neural_prepped[i][4:6431, :]		
+
 
 
 # Perform the RSA
-corrs = np.zeros(4)
-sliding_corrs = []
-RSMs = np.zeros((5, neural_prepped[0].shape[0], neural_prepped[0].shape[0]))
-for area, i in zip(neural_prepped, np.arange(4)) :
-	
-	results = RSA(area, es_spect_chop, sliding_window=True, window_width=30) 
-	
-	# Record the correlations between the current two RSMs
-	corrs[i] = results[2]
 
-	# Record the sliding correlations betweeen the two current RSMs
-	sliding_corrs.append(results[4])
+# Data parameters
+n_feats = len(features)
+n_neurdata = len(neural_prepped)
+n_RSMs = n_neurdata + 1
+n_trs = neural_prepped[0].shape[0]
 
-	# Record the current neural RSM
-	RSMs[i] = results[0]
+# Data storage
+RSMs = np.zeros((n_feats, n_RSMs, n_trs, n_trs))
+corrs = np.zeros((n_feats, n_neurdata))
+sliding_corrs = np.zeros((n_feats, n_neurdata, n_trs-30)) #
+
+# Loop over each audio feature
+for i, feature in enumerate(features) :
 	
-# Record the audio RSM
-RSMs[4] = results[1]
+	# Skip over i = 1 because of the many zero variance rows in mel-scaled spectrogram
+	if i == 1 :
+		continue
 
-# Convert sliding correlations into an ndarray
-sliding_corrs = np.asarray(sliding_corrs)
+	print(f"Performing RSA using audio feature {i+1} of {n_feats}")
+	
+	#slide_corrs_temp = []
+	
+	# Loop over each neural dataset
+	for j, neurdata in enumerate(neural_prepped) :
+		
+		results = RSA(neurdata, feature, sliding_window=True, window_width=30) 
+		
+		# Record the current neural RSM
+		RSMs[i, j] = results[0]
+
+		# Record the correlations between the current two RSMs
+		corrs[i, j] = results[2]
+
+		# Record the sliding correlations betweeen the two current RSMs
+		sliding_corrs[i, j] = results[4]
+		#slide_corrs_temp.append(results[4])
+		
+	# Record the audio feature RSM
+	RSMs[i, 4] = results[1]
+
+	# Store the sliding correlations as ndarrays 
+	#slide_corrs_temp = np.asarray(slide_corrs_temp)
+
+
+# Print the results
+print("\nResults")
+print("-------")
+
+for i, feature in enumerate(features) :
+	
+	if i == 1 :
+		continue
+
+	print(f"{feat_labels[i]} correlations: {np.around(corrs[i], decimals=4)}")
+
+
+
+'''
 
 # Save the between RSM correlations and RSMs
 save_dir = "/tigress/pnaphade/Eternal_Sunshine/results/RSA/"
 roi = "A1"
-corrs_path = pathlib.Path(save_dir + roi + "_corrs.npy")
-RSMs_path = pathlib.Path(save_dir + roi + "_RSMs.npy")
+corrs_path = Path(save_dir + roi + "_corrs.npy")
+RSMs_path = Path(save_dir + roi + "_RSMs.npy")
 	
 if not(corrs_path.exists()) :
 	np.save(corrs_path, corrs)
@@ -82,7 +125,7 @@ roi_labels = ["Music Bilateral A1", "Music Right A1", "No Music Bilateral A1", "
 # Visualize the neural representational similarity matrices
 fig, axes = plt.subplots(2, 2, figsize=(10, 10))
 axes = axes.flatten()
-for i, ax in zip(np.arange(4), axes) :
+for i, ax in zip(np.arange(n_neurdata), axes) :
 
 	im = ax.imshow(RSMs[i], cmap='jet')
 	ax.set_title(roi_labels[i])
@@ -112,7 +155,7 @@ cbar = fig.colorbar(im, cax=cbar_ax)
 fig, axes = plt.subplots(2, 2, figsize=(15, 12))
 axes = axes.flatten()
 
-for i, ax in zip(np.arange(4), axes) :
+for i, ax in zip(np.arange(n_neurdata), axes) :
 
 	ax.plot(sliding_corrs[i], linewidth=0.5)
 	ax.set_title(roi_labels[i])
@@ -125,7 +168,7 @@ for i, ax in zip(np.arange(4), axes) :
 	if i == 0 or i == 2 :
 		ax.set_ylabel("Neural-Audio Correlation")
 
-
+'''
 '''
 # Correlations for final beach house scene
 RSM_corrs_beachhouse = RSM_corrs[:, 0, 5410:5470]
@@ -136,7 +179,7 @@ print(f"Neural-Audio correlations, final beach house scene: {avg_corrs_beachhous
 fig, axes = plt.subplots(2, 2, figsize=(15, 12))
 axes = axes.flatten()
 
-for i, ax in zip(np.arange(n_rois), axes) :
+for i, ax in zip(np.arange(n_neurdata), axes) :
 
 	ax.plot(RSM_corrs_beachhouse[i, :], linewidth=1)
 	ax.set_title(roi_labels[i])
