@@ -17,9 +17,19 @@ features = [np.load(path).T for path in feat_paths]
 feat_labels = [re.search('es_(.+?).npy', path).group(1) for path in feat_paths]
 
 # Load in neural data
-masked_dir = "/tigress/jamalw/Eternal_Sunshine/scripts/rois/masked_data/"
-runs = ["music/a1plus_run1_n12.npy", "music/a1plus_run2_n12.npy", "music/rA1_run1_n12.npy", "music/rA1_run2_n12.npy","no_music/a1plus_run1_n11.npy","no_music/a1plus_run2_n11.npy","no_music/rA1_run1_n11.npy","no_music/rA1_run2_n11.npy"]
-neural_runs = [np.load(masked_dir + run) for run in runs]
+masked_dir = "/tigress/pnaphade/Eternal_Sunshine/scripts/rois/masked_data/"
+
+A1_data = ["music/a1plus_run1_n12.npy", "music/a1plus_run2_n12.npy", "music/rA1_run1_n12.npy", "music/rA1_run2_n12.npy","no_music/a1plus_run1_n11.npy","no_music/a1plus_run2_n11.npy","no_music/rA1_run1_n11.npy","no_music/rA1_run2_n11.npy"]
+
+control_data = ["music/brainstem_run1_n12.npy", "music/brainstem_run2_n12.npy", "music/occipital_pole_run1_n12.npy", "music/occipital_pole_run2_n12.npy", "no_music/brainstem_run1_n11.npy", "no_music/brainstem_run2_n11.npy", "no_music/occipital_pole_run1_n11.npy", "no_music/occipital_pole_run2_n11.npy"]
+
+# Choose which dataset to analyze
+neural_runs = [np.load(masked_dir + run) for run in control_data]
+
+# Labels for displaying results
+#corr_labels = ["Music A1", "Music rA1", "No Music A1", "No Music rA1"]
+corr_labels = ["Music Brainstem", "Music Occipital Pole", "No Music Brainstem", "No Music Occipital Pole"]
+
 
 
 
@@ -93,17 +103,21 @@ for i, feature in enumerate(features) :
 
 # Print the results
 print("\nResults")
-print("-------")
+print("-------\n")
 
 for i, feature in enumerate(features) :
 	
+	# Skip over the mel-scaled spectrogram	
 	if i == 1 :
 		continue
+	
+	print(f"{feat_labels[i]}")
 
-	print(f"{feat_labels[i]} correlations: {np.around(corrs[i], decimals=4)}")
+	for j in np.arange(n_neurdata) :
+		print(f"{corr_labels[j]}-Audio correlation: {np.around(corrs[i, j], decimals=4)}")
 
-
-
+	if not(i == len(features)-1) :
+		print("\n", end='')
 '''
 
 # Save the between RSM correlations and RSMs
