@@ -1,6 +1,11 @@
+# Ignore all swap files
 *.sw*
-scripts/__pycache__/
+
+# Ignore data, results directories
 data/*
 results/*
-scripts/logfiles/*
+
+# Within the scripts directory, ignore rois, logfiles, and __pycache__ 
 scripts/rois/*
+scripts/logfiles/*
+scripts/__pycache__/*
