@@ -68,7 +68,7 @@ def extract(feature_type, audio_filepath) :
 		feat_1 = lb.amplitude_to_db(np.abs(feat_raw_1))
 		feat_2 = lb.amplitude_to_db(np.abs(feat_raw_2))
 
-	if feature_type = "mel_spect" :
+	if feature_type == "mel_spect" :
 		feat_1 = lb.power_to_db(feat_raw_1)
 		feat_2 = lb.power_to_db(feat_raw_2)
 
@@ -128,7 +128,7 @@ def sliding_avg(feat, audio, sample_rate) :
 		raise ValueError("feat cannot be complex")
 	if not(audio.ndim == 1) :
 		raise ValueError("audio must be one dimensional")
-	feat
+	
 	# Define the window and set the dimensions of the sliding average feature accordingly
 	window = np.round(feat.shape[1]/(len(audio)/sample_rate))
 	sliding_feat = np.zeros((feat.shape[0], int(np.round((feat.shape[1]/window)))))
