@@ -41,16 +41,18 @@ def extract(feature_type, audio_filepath) :
 		raise TypeError("audio_filepath must be a string")
 	
 	# Load in the audio
-	audio, sample_rate = open_audio (audio_filepath)
+	audio, sample_rate = open_audio(audio_filepath)
 
 	# Convert to mono audio, transpose if necessary so that lb.to_mono gets input of shape (2, n)
 	if audio.shape[1] == 2 :
 		audio = audio.T
 	audio_mono = lb.to_mono(audio)
 
+
 	# Split the audio in half for computational ease
 	audio_1 = audio_mono[: int(audio_mono.shape[0]/2)]
 	audio_2 = audio_mono[int(audio_mono.shape[0]/2) :]
+
 	
 	# Extract the desired feature, noting that lb.stft doesn't take sample rate as an argument
 	if feature_type == "spect" :
@@ -60,13 +62,28 @@ def extract(feature_type, audio_filepath) :
 		feat_raw_1 = feature_functions[feature_type](audio_1, sr=sample_rate)
 		feat_raw_2 = feature_functions[feature_type](audio_2, sr=sample_rate)
 
-	# Convert to dB, take absolute value
-	feat_dB_1 = lb.amplitude_to_db(np.abs(feat_raw_1))
-	feat_dB_2 = lb.amplitude_to_db(np.abs(feat_raw_2))
+
+	# Perform the appropriate conversions
+	if feature_type == "spect" :
+		feat_1 = lb.amplitude_to_db(np.abs(feat_raw_1))
+		feat_2 = lb.amplitude_to_db(np.abs(feat_raw_2))
+
+	if feature_type = "mel_spect" :
+		feat_1 = lb.power_to_db(feat_raw_1)
+		feat_2 = lb.power_to_db(feat_raw_2)
+
+	if feature_type == "chroma_cqt" :
+		feat_1 = lb.amplitude_to_db(feat_raw_1)
+		feat_2 = lb.amplitude_to_db(feat_raw_2)
+	
+	# No conversions necessary for mfccs
+	if feature_type == "mfcc" :
+		feat_1 = feat_raw_1
+		feat_2 = feat_raw_2
 
 	# Convert to seconds
-	feat_smooth_1 = sliding_avg(feat_dB_1, audio_1, sample_rate)
-	feat_smooth_2 = sliding_avg(feat_dB_2, audio_2, sample_rate)
+	feat_smooth_1 = sliding_avg(feat_1, audio_1, sample_rate)
+	feat_smooth_2 = sliding_avg(feat_2, audio_2, sample_rate)
 	
 	# Splice the feature representations together
 	extracted_feature = np.hstack((feat_smooth_1, feat_smooth_2))
@@ -111,7 +128,7 @@ def sliding_avg(feat, audio, sample_rate) :
 		raise ValueError("feat cannot be complex")
 	if not(audio.ndim == 1) :
 		raise ValueError("audio must be one dimensional")
-
+	feat
 	# Define the window and set the dimensions of the sliding average feature accordingly
 	window = np.round(feat.shape[1]/(len(audio)/sample_rate))
 	sliding_feat = np.zeros((feat.shape[0], int(np.round((feat.shape[1]/window)))))
