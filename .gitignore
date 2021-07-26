@@ -8,4 +8,4 @@ results/*
 # Within the scripts directory, ignore rois, logfiles, and __pycache__ 
 scripts/rois/*
 scripts/logfiles/*
-scripts/__pycache__/*
+scripts/__pycache__/
