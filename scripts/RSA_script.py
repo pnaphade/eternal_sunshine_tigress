@@ -9,7 +9,7 @@ import glob
 import xlrd
 
 
-#Load in the audio features, transpose in preparation for correlation
+# Load in the audio features, transpose in preparation for correlation
 feat_dir = "/tigress/pnaphade/Eternal_Sunshine/results/RSA"
 feat_paths = glob.glob(os.path.join(feat_dir, "es*"))
 features = [np.load(path).T for path in feat_paths]
@@ -24,19 +24,23 @@ A1_data = ["music/a1plus_run1_n12.npy", "music/a1plus_run2_n12.npy", "music/rA1_
 
 control_data = ["music/brainstem_run1_n12.npy", "music/brainstem_run2_n12.npy", "music/occipital_pole_run1_n12.npy", "music/occipital_pole_run2_n12.npy", "no_music/brainstem_run1_n11.npy", "no_music/brainstem_run2_n11.npy", "no_music/occipital_pole_run1_n11.npy", "no_music/occipital_pole_run2_n11.npy"]
 
-
 # Choose which dataset to analyze
-neural_runs = [np.load(masked_dir + run) for run in A1_data]
-#neural_runs = []
+data_choice = "A1"
 
-#for i in np.arange(8) :
-	#rand_data = np.random.default_rng().uniform(-2, 2, (1500, 3240, 12))
-	#neural_runs.append(rand_data)
+if data_choice == "A1" :
+	neural_runs = [np.load(masked_dir + run) for run in A1_data]
+	corr_labels = ["Music A1", "Music rA1", "No Music A1", "No Music rA1"]
 
-# Labels for displaying results
-corr_labels = ["Music A1", "Music rA1", "No Music A1", "No Music rA1"]
-#corr_labels = ["Music Brainstem", "Music Occipital Pole", "No Music Brainstem", "No Music Occipital Pole"]
-#corr_labels = ["random 1", "random 2", "random 3", "random 4"]
+if data_choice == "control" :
+	neural_runs = [np.load(masked_dir + run) for run in control_data]
+	corr_labels = ["Music Brainstem", "Music Occipital Pole", "No Music Brainstem", "No Music Occipital Pole"]
+
+if data_choice == "random" : 
+	neural_runs = []
+	for i in np.arange(8) :
+		rand_data = np.random.default_rng().uniform(-2, 2, (1500, 3240, 12))
+		neural_runs.append(rand_data)
+	corr_labels = ["random 1", "random 2", "random 3", "random 4"]
 
 
 
@@ -83,7 +87,7 @@ for i, feature in enumerate(features) :
 	# Loop over each neural dataset
 	for j, neurdata in enumerate(neural_prepped) :
 		
-		results = RSA(neurdata, feature, sliding_window=True, window_width=30) 
+		results = RSA(neurdata, feature)#, sliding_window=True, window_width=30) 
 		
 		# Record the current neural RSM
 		RSMs[i, j] = results[0]
@@ -92,13 +96,10 @@ for i, feature in enumerate(features) :
 		corrs[i, j] = results[2]
 
 		# Record the sliding correlations betweeen the two current RSMs
-		sliding_corrs[i, j] = results[4]
+		#sliding_corrs[i, j] = results[4]
 			
 	# Record the audio feature RSM
 	RSMs[i, 4] = results[1]
-
-	# Store the sliding correlations as ndarrays 
-	#slide_corrs_temp = np.asarray(slide_corrs_temp)
 
 
 # Credits scene regressor
@@ -107,7 +108,7 @@ for i, feature in enumerate(features) :
 credits_sliding_corrs = sliding_corrs[:, :, -175:]
 credits_corrs = np.mean(credits_sliding_corrs, axis=2)
 
-master_corrs = [corrs, credits_corrs]
+master_corrs = [corrs]#, credits_corrs]
 
 # Print the results
 print("\nResults")
@@ -125,7 +126,7 @@ for h, corrs in enumerate(master_corrs) :
 		print(f"{feat_labels[i]}")
 
 		for j in np.arange(n_neurdata) :
-			print(f"{corr_labels[j]}-Audio correlation: {np.around(corrs[i, j], decimals=4)}")
+			print(f"{corr_labels[j]}: {np.around(corrs[i, j], decimals=4)}")
 
 		if not(i == 3 and h == 1) :
 			print("\n", end='')
