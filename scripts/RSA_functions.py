@@ -77,7 +77,7 @@ def RSA(data_1, data_2, sliding_window=False, window_width=None) :
 		win_1  = chop(RSM_1, i, i+window_width)
 		win_2  = chop(RSM_2, i, i+window_width)
 		# Pull out the upper triangles of the RSMs for correlation
-		triu_idx = np.triu_indices(window_width)
+		triu_idx = np.triu_indices(window_width, k=1)
 		win_1_triu = win_1[triu_idx]
 		win_2_triu = win_2[triu_idx]
 		# Compute the Pearson correlation and p value
