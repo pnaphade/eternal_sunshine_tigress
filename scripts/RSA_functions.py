@@ -47,7 +47,7 @@ def RSA(data_1, data_2, sliding_window=False, window_width=None) :
 	if (sliding_window==False) :
 	
 		# Pull out the upper triangles of the RSMs for correlation
-		triu_idx = np.triu_indices(RSM_1.shape[0])
+		triu_idx = np.triu_indices(RSM_1.shape[0], k=1)
 		triu_1 = RSM_1[triu_idx]
 		triu_2 = RSM_2[triu_idx]
 		# Compute the Pearson correlation and p value
@@ -100,7 +100,9 @@ def corr_prep(run1_data, run2_data, transpose=True) :
 	Parameters
 	----------
 	run1_data, run2_data (numpy.ndarray) :
-		The two runs of three dimensional data to be processed.
+		The two runs of three dimensional data to be processed. Data should be either
+		voxels x time x subjects (use transpose=True) or time x voxels x subjects 
+		(use transpose=False).
 	transpose (bool, optional) :
 		If tranpose is True (default), the returned matrix is transposed. Otherwise,
 		the original orientation of the first two dimensions is unchanged.
@@ -123,7 +125,7 @@ def corr_prep(run1_data, run2_data, transpose=True) :
 	run2_avg = np.mean(run2_data, axis=2)
 
 	# Concatenate the data across time
-	processed_data  = np.concatenate((run1_avg, run2_avg), axis=1)
+	processed_data  = np.hstack((run1_avg, run2_avg))
 
 	# Check if the data needs to be transposed
 	if (transpose) :
