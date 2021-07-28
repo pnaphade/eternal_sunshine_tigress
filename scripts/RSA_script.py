@@ -69,7 +69,10 @@ for i in np.arange(len(neural_prepped)) :
 # Perform the RSA
 
 # Choose sliding windows or no sliding windows 
-sliding_window = True
+sliding_window = False
+
+if not(isinstance(sliding_window, bool)) : 
+	raise TypeError("sliding_window must be a boolean")
 
 # Data parameters
 n_feats = len(features)
@@ -108,6 +111,7 @@ for i, feature in enumerate(features) :
 	RSMs[i, 4] = results[1]
 
 
+
 # Credits scene regressor
 
 # If sliding windows were used, we can just pull out the
@@ -134,8 +138,89 @@ else :
 
 
 
+# Music Scene correlations
+
+# Read the Scene Song Notations workbook
+music_times_path = "/tigress/pnaphade/Eternal_Sunshine/data/scene_song_notations.xlsx"
+music_times_wb = xlrd.open_workbook(music_times_path)
+sheet = music_times_wb.sheet_by_index(0)
+
+# Extract the onset and offset columns
+onset_cells = sheet.col(1)
+offset_cells = sheet.col(2)
+
+# Pop the headers of the columns
+onset_cells.pop(0)
+offset_cells.pop(0)
+
+# Extract the values of the columns
+onset_vals = [cell.value for cell in onset_cells]
+offset_vals = [cell.value for cell in offset_cells]
+
+# Function for converting to seconds
+def to_seconds(time):
+	hours, minutes, seconds = time.split(':')
+	total_seconds = int(hours)*3600 + int(minutes)*60 + int(seconds)
+	return total_seconds
+
+# Convert the times into seconds
+onset_sec = np.asarray([to_seconds(val) for val in onset_vals])
+offset_sec = np.asarray([to_seconds(val) for val in offset_vals])
+
+# Adjust 4 seconds forward due to beginning silence
+onset_sec, offset_sec = onset_sec-4, offset_sec-4
+n_music = len(onset_sec)
+
+# Adjust offset_sec for time
+if sliding_window :
+	 # set last offset equal to the last tr we performed a sliding correlation
+	offset_sec[-1] = sliding_corrs.shape[2] - 1
+else :
+	# set last offset equal to the number of trs after cutting off zero variance
+	offset_sec[-1] =  n_trs - 1
+
+
+# Calculate correlations for music scenes
+
+# If sliding windows were used, we can just pull out the relevant local correlations
+if sliding_window :
+	
+	music_scene_avg_corrs = np.zeros((n_music, n_feats, n_neurdata))
+	
+	# Pull out the correlations from each music scene
+	for onset, offset, i in zip(onset_sec, offset_sec, np.arange(n_music)) :
+		scene_corrs = sliding_corrs[:, :, onset:offset]
+		scene_avg = np.mean(scene_corrs, axis=2)
+		music_scene_avg_corrs[i] = scene_avg
+
+	# Average across all scenes
+	music_corrs = np.mean(music_scene_avg_corrs, axis=0)
+
+
+# Otherwise, we perform traditional RSA on each music scene
+else : 
+	music_corrs_byscene = np.zeros((n_music, n_feats, n_neurdata))
+
+	# Calculate the correlations for each music scene
+	for i in np.arange(n_music) :
+		
+		# Loop over each audio feature
+		for j, feature in enumerate(features) :
+	
+			# Loop over each neural dataset
+			for k, neurdata in enumerate(neural_prepped) :
+		
+				results = RSA(neurdata[onset:offset], feature[onset:offset])
+
+				music_corrs_byscene[i, j, k] = results[2]
+
+	# Average across all scenes
+	music_corrs = np.mean(music_corrs_byscene, axis=0)
+
+
+
 # Print the results
-master_corrs = [corrs, credits_corrs]
+master_corrs = [corrs, music_corrs]
 
 print("\nResults")
 print("-------\n")
@@ -145,7 +230,7 @@ for h, corrs in enumerate(master_corrs) :
 	if h == 0 :
 		print("Whole-Movie Correlations")
 	else :
-		print("Credits Scene Correlations")
+		print("Music Scene Correlations")
 
 	for i, feature in enumerate(features) :
 		
@@ -159,7 +244,24 @@ for h, corrs in enumerate(master_corrs) :
 
 
 
-# plot the credits results
+'''
+# Save the between RSM correlations and RSMs
+save_dir = "/tigress/pnaphade/Eternal_Sunshine/results/RSA/"
+roi = "A1"
+corrs_path = Path(save_dir + roi + "_corrs.npy")
+RSMs_path = Path(save_dir + roi + "_RSMs.npy")
+	
+if not(corrs_path.exists()) :
+	np.save(corrs_path, corrs)
+
+if not(RSMs_path.exists()) :
+	np.save(RSMs_path, RSMs)
+
+
+# Plotting
+
+
+# Visualize the credits regressor
 fig, axes = plt.subplots(2, 4, figsize=(20, 10))
 axes = axes.flatten()
 
@@ -186,59 +288,8 @@ for i, ax in enumerate(axes) :
 	if i == 0 or i == 4 :
 		ax.set_ylabel("Neural-Audio Correlation")
 
-'''
-# Read the Scene Song Notations workbook
-music_times_path = "/tigress/pnaphade/Eternal_Sunshine/data/scene_song_notations.xlsx"
-music_times_wb = xlrd.open_workbook(music_times_path)
-sheet = music_times_wb.sheet_by_index(0)
 
-# Extract the onset and offset columns
-onset_cells = sheet.col(1)
-offset_cells = sheet.col(2)
-
-# Pop the headers of the columns
-onset_cells.pop(0)
-offset_cells.pop(0)
-
-# Extract the values of the columns
-onset_vals = [cell.value for cell in onset_cells]
-offset_vals = [cell.value for cell in offset_cells]
-
-# Function for converting to seconds
-def to_seconds(time):
-	
-	hours, minutes, seconds = time.split(':')
-	
-	total_seconds = int(hours)*3600 + int(minutes)*60 + int(seconds)
-	
-	return total_seconds
-
-
-# Convert the times into seconds
-onset_sec = np.asarray([to_seconds(val) for val in onset_vals])
-offset_sec = np.asarray([to_seconds(val) for val in offset_vals])
-
-# Adjust 4 seconds forward due to beginning silence
-onset_sec, offset_sec = onset_sec-4, offset_sec-4
-'''
-
-'''
-# Save the between RSM correlations and RSMs
-save_dir = "/tigress/pnaphade/Eternal_Sunshine/results/RSA/"
-roi = "A1"
-corrs_path = Path(save_dir + roi + "_corrs.npy")
-RSMs_path = Path(save_dir + roi + "_RSMs.npy")
-	
-if not(corrs_path.exists()) :
-	np.save(corrs_path, corrs)
-
-if not(RSMs_path.exists()) :
-	np.save(RSMs_path, RSMs)
-
-
-# Plotting
 roi_labels = ["Music Bilateral A1", "Music Right A1", "No Music Bilateral A1", "No Music Right A1"]
-
 # Visualize the neural representational similarity matrices
 fig, axes = plt.subplots(2, 2, figsize=(10, 10))
 axes = axes.flatten()
@@ -285,30 +336,4 @@ for i, ax in zip(np.arange(n_neurdata), axes) :
 	if i == 0 or i == 2 :
 		ax.set_ylabel("Neural-Audio Correlation")
 
-
-
-# Correlations for final beach house scene
-RSM_corrs_beachhouse = RSM_corrs[:, 0, 5410:5470]
-avg_corrs_beachhouse = np.mean(RSM_corrs_beachhouse, axis=1)
-print(f"Neural-Audio correlations, final beach house scene: {avg_corrs_beachhouse}")
-
-# Visualize beach house scene correlations
-fig, axes = plt.subplots(2, 2, figsize=(15, 12))
-axes = axes.flatten()
-
-for i, ax in zip(np.arange(n_neurdata), axes) :
-
-	ax.plot(RSM_corrs_beachhouse[i, :], linewidth=1)
-	ax.set_title(roi_labels[i])
-	ax.set_ylim(0, 1)
-	ax.text(45, 0.9, r'$r_{mean}$' + f" = {np.around(avg_corrs_beachhouse, decimals=4)[i]}")
-		
-	if i == 2 or i == 3 :
-		ax.set_xlabel("TR")
-	
-	if i == 0 or i == 2 :
-		ax.set_ylabel("Neural-Audio Correlation")
-
-#plt.show()
 '''
-
