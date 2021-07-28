@@ -83,7 +83,6 @@ corrs = np.zeros((n_feats, n_neurdata))
 if sliding_window :
 	sliding_corrs = np.zeros((n_feats, n_neurdata, n_trs-30))
 
-
 # Loop over each audio feature
 for i, feature in enumerate(features) :
 	
@@ -161,25 +160,30 @@ for h, corrs in enumerate(master_corrs) :
 
 
 # plot the credits results
-fig, axes = plt.subplots(1, 4, figsize=(20, 5))
+fig, axes = plt.subplots(2, 4, figsize=(20, 10))
 axes = axes.flatten()
 
 for i, ax in enumerate(axes) :
 	
-	# plot the music A1 data
-	ax.plot(credits_sliding_corrs[i, 0], 'r-', linewidth=1, label=corr_labels[0])
-
-	# plot the no music A1 data
-	ax.plot(credits_sliding_corrs[i, 2], 'b-', linewidth=1, label=corr_labels[2])
-	
-	ax.set_title(feat_labels[i])
-		
-	ax.set_xlabel("TR")
+	if i < 4 :
+		# plot the music A1 data
+		ax.plot(credits_sliding_corrs[i, 0], 'r-', linewidth=1, label=corr_labels[0])
+		# plot the no music A1 data
+		ax.plot(credits_sliding_corrs[i, 2], 'b-', linewidth=1, label=corr_labels[2])
+		ax.set_title(feat_labels[i])
+	else :	
+		# plot the music A1 data
+		ax.plot(credits_sliding_corrs[i-4, 1], 'r-', linewidth=1, label=corr_labels[1])
+		# plot the no music A1 data
+		ax.plot(credits_sliding_corrs[i-4, 3], 'b-', linewidth=1, label=corr_labels[3])	
+		ax.set_title(feat_labels[i-4])
+		ax.set_xlabel("TR")
 	
 	ax.set_ylim(-0.2, 0.7)	
+	
 	ax.legend(loc = 'upper left')
 	
-	if i == 0 :
+	if i == 0 or i == 4 :
 		ax.set_ylabel("Neural-Audio Correlation")
 
 '''
