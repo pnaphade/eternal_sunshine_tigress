@@ -68,6 +68,9 @@ for i in np.arange(len(neural_prepped)) :
 
 # Perform the RSA
 
+# Choose sliding windows or no sliding windows 
+sliding_window = True
+
 # Data parameters
 n_feats = len(features)
 n_neurdata = len(neural_prepped)
@@ -77,40 +80,64 @@ n_trs = neural_prepped[0].shape[0]
 # Data storage
 RSMs = np.zeros((n_feats, n_RSMs, n_trs, n_trs))
 corrs = np.zeros((n_feats, n_neurdata))
-sliding_corrs = np.zeros((n_feats, n_neurdata, n_trs-30)) #
+if sliding_window :
+	sliding_corrs = np.zeros((n_feats, n_neurdata, n_trs-30))
+
 
 # Loop over each audio feature
 for i, feature in enumerate(features) :
 	
-	print(f"Performing RSA using audio feature {i+1} of {n_feats}")
-	
 	# Loop over each neural dataset
 	for j, neurdata in enumerate(neural_prepped) :
 		
-		results = RSA(neurdata, feature)#, sliding_window=True, window_width=30) 
-		
+		if sliding_window :
+			results = RSA(neurdata, feature, sliding_window=True, window_width=30) 
+		else :
+			results = RSA(neurdata, feature)
+
 		# Record the current neural RSM
 		RSMs[i, j] = results[0]
 
 		# Record the correlations between the current two RSMs
 		corrs[i, j] = results[2]
 
-		# Record the sliding correlations betweeen the two current RSMs
-		#sliding_corrs[i, j] = results[4]
+		# Record the sliding correlations betweeen the two current RSMsi
+		if sliding_window :
+			sliding_corrs[i, j] = results[4]
 			
 	# Record the audio feature RSM
 	RSMs[i, 4] = results[1]
 
 
 # Credits scene regressor
-# The credits are the last 205 seconds of the movie. Extract the last 205-30 = 175
-# seconds of the movie because of the 30s sliding windows
-credits_sliding_corrs = sliding_corrs[:, :, -175:]
-credits_corrs = np.mean(credits_sliding_corrs, axis=2)
 
-master_corrs = [corrs]#, credits_corrs]
+# If sliding windows were used, we can just pull out the
+# local correlations from credits timepoints
+if sliding_window :
+	credits_sliding_corrs = sliding_corrs[:, :, -174:]
+	credits_corrs = np.mean(credits_sliding_corrs, axis=2)
+
+# If sliding correlations weren't used, we need to re-run
+# the RSA on the credits timepoints
+else :		
+	credits_corrs = np.zeros((n_feats, n_neurdata))
+	start, end = 6222, 6426 # credits timepoints
+	
+	# Loop over each audio feature
+	for i, feature in enumerate(features) :
+	
+		# Loop over each neural dataset
+		for j, neurdata in enumerate(neural_prepped) :
+		
+			results = RSA(neurdata[start:end], feature[start:end])
+
+			credits_corrs[i, j] = results[2]
+
+
 
 # Print the results
+master_corrs = [corrs, credits_corrs]
+
 print("\nResults")
 print("-------\n")
 
@@ -131,6 +158,29 @@ for h, corrs in enumerate(master_corrs) :
 		if not(i == 3 and h == 1) :
 			print("\n", end='')
 
+
+
+# plot the credits results
+fig, axes = plt.subplots(1, 4, figsize=(20, 5))
+axes = axes.flatten()
+
+for i, ax in enumerate(axes) :
+	
+	# plot the music A1 data
+	ax.plot(credits_sliding_corrs[i, 0], 'r-', linewidth=1, label=corr_labels[0])
+
+	# plot the no music A1 data
+	ax.plot(credits_sliding_corrs[i, 2], 'b-', linewidth=1, label=corr_labels[2])
+	
+	ax.set_title(feat_labels[i])
+		
+	ax.set_xlabel("TR")
+	
+	ax.set_ylim(-0.2, 0.7)	
+	ax.legend(loc = 'upper left')
+	
+	if i == 0 :
+		ax.set_ylabel("Neural-Audio Correlation")
 
 '''
 # Read the Scene Song Notations workbook
@@ -168,30 +218,6 @@ offset_sec = np.asarray([to_seconds(val) for val in offset_vals])
 onset_sec, offset_sec = onset_sec-4, offset_sec-4
 '''
 
-'''
-# plot the credits results
-fig, axes = plt.subplots(1, 3, figsize=(15, 5))
-axes = axes.flatten()
-
-# Skip the mel-scaled spectrogram
-for i, ax in zip(np.asarray([0, 2, 3]), axes) :
-	
-	# plot the music A1 data
-	ax.plot(credits_sliding_corrs[i, 0], 'r-', linewidth=1, label=corr_labels[0])
-
-	# plot the no music A1 data
-	ax.plot(credits_sliding_corrs[i, 2], 'b-', linewidth=1, label=corr_labels[2])
-	
-	ax.set_title(feat_labels[i])
-		
-	ax.set_xlabel("TR")
-	
-	ax.set_ylim(0.2, 0.7)	
-	ax.legend(loc = 'upper left')
-	
-	if i == 0 :
-		ax.set_ylabel("Neural-Audio Correlation")
-'''
 '''
 # Save the between RSM correlations and RSMs
 save_dir = "/tigress/pnaphade/Eternal_Sunshine/results/RSA/"
@@ -255,8 +281,8 @@ for i, ax in zip(np.arange(n_neurdata), axes) :
 	if i == 0 or i == 2 :
 		ax.set_ylabel("Neural-Audio Correlation")
 
-'''
-'''
+
+
 # Correlations for final beach house scene
 RSM_corrs_beachhouse = RSM_corrs[:, 0, 5410:5470]
 avg_corrs_beachhouse = np.mean(RSM_corrs_beachhouse, axis=1)
@@ -281,3 +307,4 @@ for i, ax in zip(np.arange(n_neurdata), axes) :
 
 #plt.show()
 '''
+
