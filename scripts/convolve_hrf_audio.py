@@ -1,9 +1,23 @@
 import numpy as np
 from scipy.stats import gamma
 from scipy.special import gamma as fgamma
+import re
+from pathlib import Path
+import os
+import glob
 
-datadir = '/Users/jamalw/Dropbox/music_event_structures/music_features/'
-savedir = '/Users/jamalw/Dropbox/music_event_structures/full_regressors/'
+
+# Load in the audio features, transpose in preparation for correlation
+feat_dir = "/tigress/pnaphade/Eternal_Sunshine/results/RSA/"
+feat_paths = glob.glob(os.path.join(datadir, "es*"))
+features = [np.load(path) for path in feat_paths]
+
+# Pull out the labels of each feature from their filepaths using regex
+feat_labels = [re.search('RSA/(.+?).npy', path).group(1) for path in feat_paths]
+
+# Directory for saving hrf-convolved features
+save_dir = feat_dir
+
 
 def single_gamma_hrf(TR, t=5, d=5.2, onset=0, kernel=32):
     """Single gamma hemodynamic response function.
@@ -43,25 +57,34 @@ def single_gamma_hrf(TR, t=5, d=5.2, onset=0, kernel=32):
           * np.e ** ((u - t) / -((d ** 2) / t / 8.0 / np.log(2.0)))
 
     ## Downsample.
-    good_pts=np.array(range(np.int(kernel/TR)))*fMRI_T
+    good_pts=np.array(range(int(kernel/TR)))*fMRI_T
     hrf=hrf[good_pts.astype(int)]
 
     ## Normalize and return.
     hrf = hrf/np.sum(hrf)
     return hrf
 
+
+# Get the hrf
 hrf = single_gamma_hrf(TR = 1)
-n_acq = 2511
 
-chromaRun1_hrf = np.apply_along_axis(np.convolve, 1, chromaRun1, hrf, 'full')[:n_acq][:,0:2511]
-#mfccRun1_hrf = np.apply_along_axis(np.convolve, 1, mfccRun1, hrf, 'full')[:n_acq][:,0:2511]
-#tempoRun1_hrf = np.apply_along_axis(np.convolve, 1, tempoRun1, hrf, 'full')[:n_acq][:,0:2511]
-spectRun1_hrf = np.apply_along_axis(np.convolve, 1, spectRun1, hrf, 'full')[:n_acq][:,0:2511]
+# Number of trs
+n_acq = features[0].shape[1]
 
 
-np.save(savedir + 'chromaRun1_no_hrf',chromaRun1_hrf)
-#np.save(savedir + 'mfccRun1_no_hrf', mfccRun1_hrf)
-#np.save(savedir + 'tempoRun1_12PC_singles_no_hrf', tempoRun1_hrf)
-np.save(savedir + 'spectRun1_12PC_no_hrf', spectRun1)
+# Convolve the features and the hrf
+hrf_features = []
+
+for feature in features : 
+
+	hrf_feature = np.apply_along_axis(np.convolve, 1, feature, hrf)[:, 0:n_acq]
+	
+	hrf_features.append(hrf_feature)
+
+#chromaRun1_hrf = np.apply_along_axis(np.convolve, 1, chromaRun1, hrf, 'full')[:n_acq][:,0:2511]
 
 
+# Save the hrf-convolved features
+for hrf_feature, label in zip(hrf_features, feat_labels) :
+	
+	np.save(save_dir + label + "_hrf.npy", hrf_feature)
