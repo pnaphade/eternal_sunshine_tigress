@@ -9,7 +9,7 @@ import glob
 
 # Load in the audio features, transpose in preparation for correlation
 feat_dir = "/tigress/pnaphade/Eternal_Sunshine/results/RSA/"
-feat_paths = glob.glob(os.path.join(datadir, "es*"))
+feat_paths = glob.glob(os.path.join(feat_dir, "es*"))
 features = [np.load(path) for path in feat_paths]
 
 # Pull out the labels of each feature from their filepaths using regex
@@ -87,4 +87,4 @@ for feature in features :
 # Save the hrf-convolved features
 for hrf_feature, label in zip(hrf_features, feat_labels) :
 	
-	np.save(save_dir + label + "_hrf.npy", hrf_feature)
+	np.save(save_dir + "hrf_" + label + ".npy", hrf_feature)
