@@ -3,11 +3,11 @@ import matplotlib.pyplot as plt
 
 # Load in the sliding correlations
 A1_corrs = np.load('/tigress/pnaphade/Eternal_Sunshine/results/RSA/hrf_A1_slide_corrs.npy')
-brainstem_corrs = np.load('/tigress/pnaphade/Eternal_Sunshine/results/RSA/hrf_control_slide_corrs.npy')
+brainstem_corrs = np.load('/tigress/pnaphade/Eternal_Sunshine/results/RSA/hrf_bs_slide_corrs.npy')
 
 # Load in the whole-movie correlations
 A1_whole_corrs = np.load('/tigress/pnaphade/Eternal_Sunshine/results/RSA/hrf_A1_full_length_slide_corrs.npy')
-bs_whole_corrs = np.load('/tigress/pnaphade/Eternal_Sunshine/results/RSA/hrf_control_full_length_slide_corrs.npy')
+bs_whole_corrs = np.load('/tigress/pnaphade/Eternal_Sunshine/results/RSA/hrf_bs_full_length_slide_corrs.npy')
 
 
 
