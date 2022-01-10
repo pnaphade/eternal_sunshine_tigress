@@ -17,13 +17,22 @@ ax.plot(A1_corrs[3, 0:13], 'r', label="No Music") # no music rA1
 ax.set_ylabel("Correlation")
 ax.set_xlabel("TR")
 ax.legend()
-fig1.show()
+#fig1.show()
+
+# rA1, brainstem, occipital pole correlations over focus feature theam
+fig2, ax = plt.subplots()
+ax.plot(A1_corrs[1, 0:13],'b', label="Music rA1")
+ax.plot(bs_corrs[0, 0:13],'r', label="Music Brainstem")
+ax.plot(bs_corrs[1, 0:13], 'g', label="Music Occcipital Pole")
+ax.set_xlabel("TR")
+ax.legend()
+fig2.show()
 
 # Music/no music correlations over credits
-fig2, ax = plt.subplots()
+fig3, ax = plt.subplots()
 ax.plot(A1_corrs[1, -204:], 'b', label="Music") # music rA1
 ax.plot(A1_corrs[3, -204:], 'r', label="No Music") # no music rA1
 ax.set_ylabel("Correlation")
 ax.set_xlabel("TR")
 ax.legend()
-fig2.show()
+#fig3.show()
