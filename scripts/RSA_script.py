@@ -234,7 +234,6 @@ else :
 
 # Print the results
 #master_corrs = [corrs, music_corrs]
-sliding_corrs_avg = np.mean(sliding_corrs, axis = 2) 
 
 print("\nResults")
 print("-------")
@@ -245,7 +244,7 @@ for i, feature in enumerate(features) :
 	print(f"{feat_labels[i]}")
 	
 	for j in np.arange(n_neurdata) :
-		print(f"{corr_labels[j]}: {np.around(sliding_corrs_avg[i, j], decimals = 4)}")
+		print(f"{corr_labels[j]}: {np.around(corrs[i, j], decimals = 4)}")
 	
 
 '''
