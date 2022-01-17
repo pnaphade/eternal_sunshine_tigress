@@ -124,6 +124,34 @@ for i, feature in enumerate(features) :
 	RSMs[i, n_RSMs - 1] = results[1]
 
 
+# Print the results
+
+print("\nResults")
+print("-------")
+
+for i, feature in enumerate(features) :
+	
+	print("\n")
+	print(f"{feat_labels[i]}")
+	
+	for j in np.arange(n_neurdata) :
+		print(f"{corr_labels[j]}: {np.around(corrs[i, j], decimals = 4)}")
+	
+
+# Save the average correlations and sliding correlations
+
+save_dir = "/tigress/pnaphade/Eternal_Sunshine/results/RSA/"
+roi = "hrf_dmnA_"
+corrs_path = Path(save_dir + roi + "slide_corrs.npy")
+full_slide_corrs_path = Path(save_dir + roi + "full_length_slide_corrs.npy")
+	
+if not(corrs_path.exists()) :
+	np.save(corrs_path, corrs)
+if not(full_slide_corrs_path.exists()) :
+	np.save(full_slide_corrs_path, sliding_corrs)
+
+
+
 
 '''
 # Music Scene correlations
@@ -204,26 +232,8 @@ else :
 
 	# Average across all scenes
 	music_corrs = np.mean(music_corrs_byscene, axis=0)
-'''
 
-
-# Print the results
-#master_corrs = [corrs, music_corrs]
-
-print("\nResults")
-print("-------")
-
-for i, feature in enumerate(features) :
-	
-	print("\n")
-	print(f"{feat_labels[i]}")
-	
-	for j in np.arange(n_neurdata) :
-		print(f"{corr_labels[j]}: {np.around(corrs[i, j], decimals = 4)}")
-	
-
-'''
-
+# Print music scene results
 for h, corrs in enumerate(sliding_corrs_avg) :
 
 	if h == 0 :
@@ -234,26 +244,12 @@ for h, corrs in enumerate(sliding_corrs_avg) :
 	for i, feature in enumerate(features) :
 		
 		print(f"{feat_labels[i]}")
-
 		for j in np.arange(n_neurdata) :
 			print(f"{corr_labels[j]}: {np.around(corrs[i, j], decimals=4)}")
 
 		if not(i == 3 and h == 1) :
 			print("\n", end='')
-
-
 '''
-
-# Save the average correlations and sliding correlations
-save_dir = "/tigress/pnaphade/Eternal_Sunshine/results/RSA/"
-roi = "hrf_dmnA_"
-corrs_path = Path(save_dir + roi + "slide_corrs.npy")
-full_slide_corrs_path = Path(save_dir + roi + "full_length_slide_corrs.npy")
-	
-if not(corrs_path.exists()) :
-	np.save(corrs_path, corrs)
-if not(full_slide_corrs_path.exists()) :
-	np.save(full_slide_corrs_path, sliding_corrs)
 
 '''
 # Plotting
