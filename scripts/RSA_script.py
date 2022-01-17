@@ -11,20 +11,9 @@ import xlrd
 # Load in the audio features, transpose in preparation for correlation
 feat_dir = "/tigress/pnaphade/Eternal_Sunshine/results/RSA/"
 
-# Choose whether to use hrf-adjusted audio features
-hrf = True
-
-if not(isinstance(hrf, bool)) : 
-	raise TypeError("hrf must be a boolean")
-
-if hrf :
-	feat_paths = glob.glob(feat_dir + "hrf_es*")
-else :
-	feat_paths = glob.glob(feat_dir + "es*")
-
+# Load in hrf-convolved audio features, pull out labels
+feat_paths = glob.glob(feat_dir + "hrf_es*")
 features = [np.load(path).T for path in feat_paths]
-
-# Pull out the labels of each feature from their filepaths using regex
 feat_labels = [re.search('es_(.+?).npy', path).group(1) for path in feat_paths]
 
 # Load in neural data
@@ -88,7 +77,6 @@ timepoints = time_data[0].shape[0]
 for dataset in time_data :
 	if dataset.shape[0] != timepoints :
 		raise ValueError("All audio features and neural datasets must have the same number of timepoints")
-
 
 
 # Perform the RSA
