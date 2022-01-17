@@ -1,15 +1,15 @@
 import numpy as np
 import nibabel as nib
-from nilearn.image import resample_img, math_img
 import nilearn
+from nilearn.image import resample_img, math_img
 
-input_fn = 'brain_stem_mask'
+input_fn = 'erez_dmna_25mm'
 
 # load output affine matrix
 output_affine = nib.load('/tigress/jamalw/Eternal_Sunshine/scripts/rois/MNI152_T1_25mm_brain.nii.gz').affine
 
 # load data to be resampled
-input_data = nib.load('/tigress/jamalw/Eternal_Sunshine/scripts/rois/' + input_fn + '.nii.gz')
+input_data = nib.load('/tigress/pnaphade/Eternal_Sunshine/scripts/rois/' + input_fn + '.nii.gz')
 
 img_in_mm_space = resample_img(input_data, target_affine=output_affine,
                                target_shape=(78, 93, 78))
@@ -31,6 +31,6 @@ img_smooth = nilearn.image.smooth_img(img,fwhm='fast')
 img_smooth_bin = math_img('img > 0', img=img_smooth)
 
 # save mask
-nib.save(img_smooth_bin, '/tigress/jamalw/Eternal_Sunshine/scripts/rois/' + input_fn + '_25mm_smooth_bin.nii.gz')
+nib.save(img_smooth_bin, '/tigress/pnaphade/Eternal_Sunshine/scripts/rois/' + input_fn + '_25mm_smooth_bin.nii.gz')
 
 
