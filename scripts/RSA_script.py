@@ -124,33 +124,8 @@ for i, feature in enumerate(features) :
 	RSMs[i, n_RSMs - 1] = results[1]
 
 
+
 '''
-# Credits scene regressor
-
-# If sliding windows were used, we can just pull out the
-# local correlations from credits timepoints
-if sliding_window :
-	credits_sliding_corrs = sliding_corrs[:, :, -174:]
-	credits_corrs = np.mean(credits_sliding_corrs, axis=2)
-
-# If sliding correlations weren't used, we need to re-run
-# the RSA on the credits timepoints
-else :		
-	credits_corrs = np.zeros((n_feats, n_neurdata))
-	start, end = 6222, 6426 # credits timepoints
-	
-	# Loop over each audio feature
-	for i, feature in enumerate(features) :
-	
-		# Loop over each neural dataset
-		for j, neurdata in enumerate(neural_prepped) :
-		
-			results = RSA(neurdata[start:end], feature[start:end])
-
-			credits_corrs[i, j] = results[2]
-
-
-
 # Music Scene correlations
 
 # Read the Scene Song Notations workbook
