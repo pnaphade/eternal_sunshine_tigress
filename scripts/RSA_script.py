@@ -269,16 +269,16 @@ for h, corrs in enumerate(sliding_corrs_avg) :
 
 '''
 
-# Save the between RSM correlations and RSMs
+# Save the average correlations and sliding correlations
 save_dir = "/tigress/pnaphade/Eternal_Sunshine/results/RSA/"
-roi = "dmnA"
-corrs_path = Path(save_dir + "hrf_" + roi + "slide_corrs.npy")
-RSMs_path = Path(save_dir + roi + "hrf_RSMs.npy")
+roi = "hrf_dmnA_"
+corrs_path = Path(save_dir + roi + "slide_corrs.npy")
+full_slide_corrs_path = Path(save_dir + roi + "full_length_slide_corrs.npy")
 	
 if not(corrs_path.exists()) :
 	np.save(corrs_path, corrs)
-if not(RSMs_path.exists()) :
-	np.save(RSMs_path, RSMs)
+if not(full_slide_corrs_path.exists()) :
+	np.save(full_slide_corrs_path, sliding_corrs)
 
 '''
 # Plotting
