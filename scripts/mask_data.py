@@ -4,7 +4,7 @@ import nibabel as nib
 maskdir = '/tigress/pnaphade/Eternal_Sunshine/scripts/rois/'
 
 # Choose desired  mask
-roi = maskdir + 'erez_dmna_25mm.nii.gz'
+roi = maskdir + 'erez_dmna_25mm_smooth_bin.nii.gz'
 roiname = 'dmnA'
 
 # music group
