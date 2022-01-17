@@ -3,9 +3,9 @@ import nibabel as nib
 
 maskdir = '/tigress/pnaphade/Eternal_Sunshine/scripts/rois/'
 
-# Choose brain stem mask
-roi = maskdir + 'Occipital_Pole_bin_25mm_smooth_bin.nii.gz'
-roiname = 'occipital_pole'
+# Choose desired  mask
+roi = maskdir + 'erez_dmna_25mm.nii.gz'
+roiname = 'dmnA'
 
 # music group
 music_subjs = ['sub-002','sub-003','sub-005','sub-008','sub-010','sub-011','sub-013','sub-015','sub-017','sub-019','sub-021','sub-023']
