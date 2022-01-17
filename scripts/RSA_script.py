@@ -34,8 +34,10 @@ A1_data = ["music/a1plus_run1_n12.npy", "music/a1plus_run2_n12.npy", "music/rA1_
 
 control_data = ["music/brainstem_run1_n12.npy", "music/brainstem_run2_n12.npy", "music/occipital_pole_run1_n12.npy", "music/occipital_pole_run2_n12.npy", "no_music/brainstem_run1_n11.npy", "no_music/brainstem_run2_n11.npy", "no_music/occipital_pole_run1_n11.npy", "no_music/occipital_pole_run2_n11.npy"]
 
+dmn_data = ["music/dmnA_run1_n12.npy", "music/dmnA_run2_n12.npy", "no_music/dmnA_run1_n11.npy", "no_music/dmnA_run2_n11.npy"]
+
 # Choose which dataset to analyze
-data_choice = "control"
+data_choice = "dmn"
 
 if data_choice == "A1" :
 	neural_runs = [np.load(masked_dir + run) for run in A1_data]
@@ -44,6 +46,10 @@ if data_choice == "A1" :
 if data_choice == "control" :
 	neural_runs = [np.load(masked_dir + run) for run in control_data]
 	corr_labels = ["Music Brainstem", "Music Occipital Pole", "No Music Brainstem", "No Music Occipital Pole"]
+
+if data_choice == "dmn" :
+	neural_runs = [np.load(masked_dir + run) for run in dmn_data]
+	corr_labels = ["Music DMNa", "No Music DMNa"]
 
 if data_choice == "random" : 
 	neural_runs = []
@@ -54,7 +60,7 @@ if data_choice == "random" :
 
 
 
-# Prepare the neural data for correlation
+# Prepare the neural data for correlation, grouping together runs
 neural_prepped = []
 for i in  np.arange(int(len(neural_runs)/2)) :
 	neural_prepped.append(corr_prep(neural_runs[2*i], neural_runs[2*i+1]))
@@ -63,7 +69,7 @@ for i in  np.arange(int(len(neural_runs)/2)) :
 n_rows = features[0].shape[0]
 
 # 2D list giving the zero variance rows in each feature
-rows = [[i for i in range(n_rows) if np.var(feature[i, :]) == 0] for feature in features]
+rows = [[i for i in range(n_rows) if np.var(feature[i, :]) == 0.0] for feature in features]
 
 # For comparison, set the dictionary's values as the number zero variance rows in each feature
 n_zero_var_rows = [len(rows[i]) for i in np.arange(len(rows))]
@@ -71,8 +77,17 @@ zero_var_rows = dict(zip(feat_labels, n_zero_var_rows))
 
 # Chop off the appropriate values in the features and neural data for consistency
 for i in np.arange(len(neural_prepped)) : 
-	features[i] = features[i][4:6431, :] 
-	neural_prepped[i] = neural_prepped[i][4:6431, :]		
+	neural_prepped[i] = neural_prepped[i][5:, :]		
+
+for i in np.arange(len(features)) :
+	features[i] = features[i][5:, :] 
+
+# Ensure all data has the same number of timepoints
+time_data = features + neural_prepped
+timepoints = time_data[0].shape[0]
+for dataset in time_data :
+	if dataset.shape[0] != timepoints :
+		raise ValueError("All audio features and neural datasets must have the same number of timepoints")
 
 
 
@@ -87,7 +102,7 @@ if not(isinstance(sliding_window, bool)) :
 # Data parameters
 n_feats = len(features)
 n_neurdata = len(neural_prepped)
-n_RSMs = n_neurdata + 1
+n_RSMs = n_neurdata + 1 # one RSM for each set of neural data + one RSM for the audio
 n_trs = neural_prepped[0].shape[0]
 
 # Data storage
@@ -113,12 +128,12 @@ for i, feature in enumerate(features) :
 		# Record the correlations between the current two RSMs
 		corrs[i, j] = results[2]
 
-		# Record the sliding correlations betweeen the two current RSMsi
+		# Record the sliding correlations betweeen the two current RSMs
 		if sliding_window :
 			sliding_corrs[i, j] = results[4]
 			
-	# Record the audio feature RSM
-	RSMs[i, 4] = results[1]
+	# Record the audio feature RSM in the last index (of second dimension)
+	RSMs[i, n_RSMs - 1] = results[1]
 
 
 '''
@@ -234,14 +249,16 @@ else :
 sliding_corrs_avg = np.mean(sliding_corrs, axis = 2) 
 
 print("\nResults")
-print("-------\n")
+print("-------")
 
 for i, feature in enumerate(features) :
 	
+	print("\n")
 	print(f"{feat_labels[i]}")
 	
 	for j in np.arange(n_neurdata) :
 		print(f"{corr_labels[j]}: {np.around(sliding_corrs_avg[i, j], decimals = 4)}")
+	
 
 '''
 
@@ -264,11 +281,11 @@ for h, corrs in enumerate(sliding_corrs_avg) :
 
 
 '''
-'''
+
 # Save the between RSM correlations and RSMs
 save_dir = "/tigress/pnaphade/Eternal_Sunshine/results/RSA/"
-roi = "brainstem"
-corrs_path = Path(save_dir + roi + "hrf_corrs.npy")
+roi = "dmnA"
+corrs_path = Path(save_dir + "hrf_" + roi + "slide_corrs.npy")
 RSMs_path = Path(save_dir + roi + "hrf_RSMs.npy")
 	
 if not(corrs_path.exists()) :
@@ -276,7 +293,7 @@ if not(corrs_path.exists()) :
 if not(RSMs_path.exists()) :
 	np.save(RSMs_path, RSMs)
 
-
+'''
 # Plotting
 # Visualize the credits regressor
 fig, axes = plt.subplots(2, 4, figsize=(20, 10))
@@ -304,6 +321,7 @@ for i, ax in enumerate(axes) :
 	if i == 0 or i == 4 :
 		ax.set_ylabel("Neural-Audio Correlation")
 roi_labels = ["Music Bilateral A1", "Music Right A1", "No Music Bilateral A1", "No Music Right A1"]
+
 # Visualize the neural representational similarity matrices
 fig, axes = plt.subplots(2, 2, figsize=(10, 10))
 axes = axes.flatten()
@@ -319,6 +337,7 @@ for i, ax in zip(np.arange(n_neurdata), axes) :
 fig.subplots_adjust(right = 0.8)
 cbar_ax = fig.add_axes([0.85, 0.15, 0.05, 0.7])
 fig.colorbar(im, cax=cbar_ax)
+
 # Visualize the audio representational similarity matrix
 fig, ax = plt.subplots()
 im = ax.imshow(RSMs[4], cmap='jet')
@@ -327,8 +346,8 @@ ax.set_ylabel("TR")
 fig.subplots_adjust(right = 0.8)
 cbar_ax = fig.add_axes([0.80, 0.15, 0.05, 0.7])
 cbar = fig.colorbar(im, cax=cbar_ax)
-'''
-'''
+
+
 # Visualize the neural-audio correlations as a function of time
 fig, axes = plt.subplots(2, 2, figsize=(15, 12))
 axes = axes.flatten()
