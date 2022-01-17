@@ -1,14 +1,15 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Load in the sliding correlations
+# Load in the average sliding correlations
 A1_corrs = np.load('/tigress/pnaphade/Eternal_Sunshine/results/RSA/hrf_A1_slide_corrs.npy')
 brainstem_corrs = np.load('/tigress/pnaphade/Eternal_Sunshine/results/RSA/hrf_bs_slide_corrs.npy')
+dmn_corrs = np.load('/tigress/pnaphade/Eternal_Sunshine/results/RSA/hrf_dmnA_slide_corrs_NO_RESAMPLE.npy')
 
-# Load in the whole-movie correlations
+# Load in the sliding correlation time series for calcluating standard deviation
 A1_whole_corrs = np.load('/tigress/pnaphade/Eternal_Sunshine/results/RSA/hrf_A1_full_length_slide_corrs.npy')
 bs_whole_corrs = np.load('/tigress/pnaphade/Eternal_Sunshine/results/RSA/hrf_bs_full_length_slide_corrs.npy')
-
+dmn_whole_corrs = np.load('/tigress/pnaphade/Eternal_Sunshine/results/RSA/hrf_dmnA_full_length_slide_corrs_NO_RESAMPLE.npy')
 
 
 # Plot feature-based results
@@ -34,19 +35,21 @@ ax.set_xticks(x)
 ax.set_xticklabels(labels)
 ax.legend(bbox_to_anchor=(1.04, 1), loc=2, borderaxespad=0.)
 
-fig1.show()
+#fig1.show()
 
 
-# Plot ROI-based results
+# Plot ROI-based results for chromagram (first dimension = 2)
 labels = ["Music", "No Music"]
-A1_corr_vals = [A1_corrs[0, 0], A1_corrs[0, 2]]
-rA1_corr_vals = [A1_corrs[0, 1], A1_corrs[0, 3]]
-bs_corr_vals = [brainstem_corrs[0, 0], brainstem_corrs[0, 2]]
+A1_corr_vals = [A1_corrs[2, 0], A1_corrs[2, 2]]
+rA1_corr_vals = [A1_corrs[2, 1], A1_corrs[2, 3]]
+bs_corr_vals = [brainstem_corrs[2, 0], brainstem_corrs[2, 2]]
+dmn_corr_vals = [dmn_corrs[2, 0], dmn_corrs[2, 1]]
 
 # Compute standard deviations for error bars
 A1_err = [np.std(A1_whole_corrs[2, 0, :]), np.std(A1_whole_corrs[2, 2, :])]
 rA1_err = [np.std(A1_whole_corrs[2, 1, :]), np.std(A1_whole_corrs[2, 3, :])]
 bs_err = [np.std(bs_whole_corrs[2, 0, :]), np.std(bs_whole_corrs[2, 2, :])]
+dmn_err = [np.std(dmn_whole_corrs[2, 0, :]), np.std(dmn_whole_corrs[2, 1, :])]
 
 
 fig2 = plt.figure(figsize=(5.5, 4))
@@ -58,6 +61,8 @@ width = 0.15
 A1_bars = ax.bar(x - width, A1_corr_vals, width, label='A1', yerr=A1_err, capsize=5)
 rA1_bars = ax.bar(x, rA1_corr_vals, width, label='rA1', yerr=rA1_err, capsize=5)
 bs_bars = ax.bar(x + width, bs_corr_vals, width, label='Brainstem', yerr=bs_err, capsize=5)
+dmn_bars = ax.bar(x + width*2, dmn_corr_vals, width, label='DMNa', yerr=dmn_err, capsize=5)
+
 
 # Aesthetics
 ax.set_ylabel("Correlation")
@@ -65,4 +70,4 @@ ax.set_xticks(x)
 ax.set_xticklabels(labels)
 ax.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
 
-fig2.show()
+#fig2.show()
