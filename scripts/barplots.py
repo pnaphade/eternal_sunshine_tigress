@@ -4,12 +4,12 @@ import matplotlib.pyplot as plt
 # Load in the average sliding correlations
 A1_corrs = np.load('/tigress/pnaphade/Eternal_Sunshine/results/RSA/hrf_A1_slide_corrs.npy')
 brainstem_corrs = np.load('/tigress/pnaphade/Eternal_Sunshine/results/RSA/hrf_bs_slide_corrs.npy')
-dmn_corrs = np.load('/tigress/pnaphade/Eternal_Sunshine/results/RSA/hrf_dmnA_slide_corrs_NO_RESAMPLE.npy')
+dmn_corrs = np.load('/tigress/pnaphade/Eternal_Sunshine/results/RSA/hrf_dmnA_slide_corrs.npy')
 
 # Load in the sliding correlation time series for calcluating standard deviation
 A1_whole_corrs = np.load('/tigress/pnaphade/Eternal_Sunshine/results/RSA/hrf_A1_full_length_slide_corrs.npy')
 bs_whole_corrs = np.load('/tigress/pnaphade/Eternal_Sunshine/results/RSA/hrf_bs_full_length_slide_corrs.npy')
-dmn_whole_corrs = np.load('/tigress/pnaphade/Eternal_Sunshine/results/RSA/hrf_dmnA_full_length_slide_corrs_NO_RESAMPLE.npy')
+dmn_whole_corrs = np.load('/tigress/pnaphade/Eternal_Sunshine/results/RSA/hrf_dmnA_full_length_slide_corrs.npy')
 
 
 # Plot feature-based results
