@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 data_dir = "/tigress/pnaphade/Eternal_Sunshine/results/RSA/"
 A1_corrs = np.load(data_dir + "hrf_A1_full_length_slide_corrs.npy")
 bs_corrs = np.load(data_dir + "hrf_bs_full_length_slide_corrs.npy")
-dmn_corrs = np.load(data_dir + "hrf_dmnA_full_length_slide_corrs_NO_RESAMPLE.npy")
+dmn_corrs = np.load(data_dir + "hrf_dmnA_full_length_slide_corrs.npy")
 
 # Pull out the chromagram row
 A1_corrs = A1_corrs[2, :, :]
