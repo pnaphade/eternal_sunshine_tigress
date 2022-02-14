@@ -21,16 +21,22 @@ masked_dir = "/tigress/pnaphade/Eternal_Sunshine/scripts/rois/masked_data/"
 
 A1_data = ["music/a1plus_run1_n12.npy", "music/a1plus_run2_n12.npy", "music/rA1_run1_n12.npy", "music/rA1_run2_n12.npy","no_music/a1plus_run1_n11.npy","no_music/a1plus_run2_n11.npy","no_music/rA1_run1_n11.npy","no_music/rA1_run2_n11.npy"]
 
+rA1_reg_data = ["music/rA1_regressed_run1.npy", "music/rA1_regressed_run2.npy", "no_music/rA1_regressed_run1.npy", "no_music/rA1_regressed_run2.npy"]
+
 control_data = ["music/brainstem_run1_n12.npy", "music/brainstem_run2_n12.npy", "music/occipital_pole_run1_n12.npy", "music/occipital_pole_run2_n12.npy", "no_music/brainstem_run1_n11.npy", "no_music/brainstem_run2_n11.npy", "no_music/occipital_pole_run1_n11.npy", "no_music/occipital_pole_run2_n11.npy"]
 
 dmn_data = ["music/dmnA_run1_n12.npy", "music/dmnA_run2_n12.npy", "no_music/dmnA_run1_n11.npy", "no_music/dmnA_run2_n11.npy"]
 
 # Choose which dataset to analyze
-data_choice = "dmn"
+data_choice = "rA1_regressed"
 
 if data_choice == "A1" :
 	neural_runs = [np.load(masked_dir + run) for run in A1_data]
 	corr_labels = ["Music A1", "Music rA1", "No Music A1", "No Music rA1"]
+
+if data_choice == "rA1_regressed" :
+	neural_runs = [np.load(masked_dir + run) for run in rA1_reg_data]
+	corr_labels = ["Music rA1 regressed", "No Music rA1 regressed"]
 
 if data_choice == "control" :
 	neural_runs = [np.load(masked_dir + run) for run in control_data]
@@ -141,7 +147,7 @@ for i, feature in enumerate(features) :
 # Save the average correlations and sliding correlations
 
 save_dir = "/tigress/pnaphade/Eternal_Sunshine/results/RSA/"
-roi = "hrf_dmnA_"
+roi = "hrf_rA1_regressed"
 corrs_path = Path(save_dir + roi + "slide_corrs.npy")
 full_slide_corrs_path = Path(save_dir + roi + "full_length_slide_corrs.npy")
 	
