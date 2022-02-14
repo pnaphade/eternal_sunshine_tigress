@@ -37,7 +37,7 @@ for occ_run, rA1_run, rA1_regressed, i in zip([occ_music_run1, occ_music_run2], 
 		reg.fit(occ_music_sub.T, rA1_music_sub.T) # transpose so we have time x voxels
 
 		# Subtract the part of the rA1 signal that can be explained by occipital pole signal
-		rA1_music_reg = rA1_music_sub - np.dot(reg.coef_, occ_music_sub) - reg.intercept_[:, np.newaxis]
+		rA1_music_reg = rA1_music_sub - np.matmul(reg.coef_, occ_music_sub) - reg.intercept_[:, np.newaxis]
 
 		# Record the results
 		rA1_regressed[:, :, subj] = rA1_music_reg
@@ -61,7 +61,7 @@ for occ_run, rA1_run, rA1_regressed, i in zip([occ_nomusic_run1, occ_nomusic_run
 		reg.fit(occ_nomusic_sub.T, rA1_nomusic_sub.T) # transpose so we have time x voxels
 
 		# Subtract the part of the rA1 signal that can be explained by occipital pole signal
-		rA1_nomusic_reg = rA1_nomusic_sub - np.dot(reg.coef_, occ_nomusic_sub) - reg.intercept_[:, np.newaxis]
+		rA1_nomusic_reg = rA1_nomusic_sub - np.matmul(reg.coef_, occ_nomusic_sub) - reg.intercept_[:, np.newaxis]
 
 		# Record the results
 		rA1_regressed[:, :, subj] = rA1_nomusic_reg
