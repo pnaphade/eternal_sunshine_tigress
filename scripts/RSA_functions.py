@@ -1,5 +1,6 @@
 import numpy as np
 import scipy.stats as stats
+from sklearn import linear_model
 
 def RSA(data_1, data_2, sliding_window=False, window_width=None) :
 
@@ -91,11 +92,12 @@ def RSA(data_1, data_2, sliding_window=False, window_width=None) :
 	return results
 
 	
-def corr_prep(run1_data, run2_data, transpose=True) :
+def corr_prep(run1_data, run2_data, run1_predictor=None, run2_predictor=None, transpose=True, regress=False) :
 
 	"""
-	RSA prepreocessing for neural data. Averages across subjects, concatenates the runs,
-	and then transposes according the value of the parameter transpose.
+	RSA preprocessing for neural data. Averages across subjects, concatenates the runs,
+	and then may transpose or regress out part of the neural data based on the parameters
+        tranpsose and regress.
   
 	Parameters
 	----------
@@ -103,10 +105,18 @@ def corr_prep(run1_data, run2_data, transpose=True) :
 		The two runs of three dimensional data to be processed. Data should be either
 		voxels x time x subjects (use transpose=True) or time x voxels x subjects 
 		(use transpose=False).
+        run1_predictor, run2_predictor (numpy.ndarray) :
+                The two runs of three dimensional data to be used as predictors for run1_data 
+                and run2_data in a linear regression model.
 	transpose (bool, optional) :
 		If tranpose is True (default), the returned matrix is transposed. Otherwise,
-		the original orientation of the first two dimensions is unchanged.
-   	Returns
+		the orientation of the first two dimensions is unchanged.
+        regress (bool, optional) :
+                If regress is True, processed_data is the part of run1_data and run2_data
+                that isn't explained by run1_predictor and run2_predictor. Otherwise (default),
+                no regression is performed.
+
+        Returns
 	-------
 	processed_data (numpy.ndarray) :
 		The processed data.
@@ -130,7 +140,23 @@ def corr_prep(run1_data, run2_data, transpose=True) :
 	# Check if the data needs to be transposed
 	if (transpose) :
 		processed_data = processed_data.T
-		return processed_data
+
+        # Check if we need to regress out run1_predictor and run2_predictor
+        if (regress) :
+           
+            # Check that predictor data was provided
+            if ((run1_predictor is None) or (run2_predictor is None)) : 
+                raise ValueError("run1_predictor and run2_predictor must not be None when using regress=True")
+
+            # Average over subjects, concatenate runs of predicting data
+            predictor_data = corr_pre(run1_predictor, run2_predictor)
+
+            # Create and fit the linear model
+            reg = linear_model.LinearRegression()
+            reg.fit(predictor_data, processed_data)
+
+            # Subtract the part of processed_data that can be explained by predictor_data
+	    processed_data = processed_data - np.dot(reg.coef_, predictor_data) - reg.intercept_[:, np.newaxis]
 
 	return processed_data
 
