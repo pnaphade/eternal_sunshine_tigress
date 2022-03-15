@@ -19,24 +19,26 @@ feat_labels = [re.search('es_(.+?).npy', path).group(1) for path in feat_paths]
 # Load in neural data
 masked_dir = "/tigress/pnaphade/Eternal_Sunshine/scripts/rois/masked_data/"
 
-A1_data = ["music/a1plus_run1_n12.npy", "music/a1plus_run2_n12.npy", "music/rA1_run1_n12.npy", "music/rA1_run2_n12.npy","no_music/a1plus_run1_n11.npy","no_music/a1plus_run2_n11.npy","no_music/rA1_run1_n11.npy","no_music/rA1_run2_n11.npy"]
+A1_data = ["music/a1plus_run1_smooth_n25.npy", "music/a1plus_run2_smooth_n25.npy", "no_music/a1plus_run1_smooth_n25.npy","no_music/a1plus_run2_smooth_n25.npy"]
 
-rA1_reg_data = ["music/rA1_regressed_run1.npy", "music/rA1_regressed_run2.npy", "no_music/rA1_regressed_run1.npy", "no_music/rA1_regressed_run2.npy"]
+rA1_data = ["music/rA1_run1_n12.npy", "music/rA1_run2_n12.npy","no_music/rA1_run1_n11.npy", "no_music/rA1_run2_n11.npy"]
 
-control_data = ["music/brainstem_run1_n12.npy", "music/brainstem_run2_n12.npy", "music/occipital_pole_run1_n12.npy", "music/occipital_pole_run2_n12.npy", "no_music/brainstem_run1_n11.npy", "no_music/brainstem_run2_n11.npy", "no_music/occipital_pole_run1_n11.npy", "no_music/occipital_pole_run2_n11.npy"]
+brainstem_data = ["music/brainstem_run1_n12.npy", "music/brainstem_run2_n12.npy", "no_music/brainstem_run1_n11.npy", "no_music/brainstem_run2_n11.npy"]
+
+occipital_data = ["music/occipital_pole_run1_n12.npy", "music/occipital_pole_run2_n12.npy", "no_music/occipital_pole_run1_n11.npy", "no_music/occipital_pole_run2_n11.npy"]
 
 dmn_data = ["music/dmnA_run1_n12.npy", "music/dmnA_run2_n12.npy", "no_music/dmnA_run1_n11.npy", "no_music/dmnA_run2_n11.npy"]
 
 # Choose which dataset to analyze
-data_choice = "rA1_regressed"
+data_choice = "A1"
 
 if data_choice == "A1" :
 	neural_runs = [np.load(masked_dir + run) for run in A1_data]
-	corr_labels = ["Music A1", "Music rA1", "No Music A1", "No Music rA1"]
+	corr_labels = ["Music A1", "No Music A1"]
 
-if data_choice == "rA1_regressed" :
-	neural_runs = [np.load(masked_dir + run) for run in rA1_reg_data]
-	corr_labels = ["Music rA1 regressed", "No Music rA1 regressed"]
+if data_choice == "rA1" :
+	neural_runs = [np.load(masked_dir + run) for run in rA1_data]
+	corr_labels = ["Music rA1", "No Music rA1"]
 
 if data_choice == "control" :
 	neural_runs = [np.load(masked_dir + run) for run in control_data]
@@ -53,12 +55,13 @@ if data_choice == "random" :
 		neural_runs.append(rand_data)
 	corr_labels = ["random 1", "random 2", "random 3", "random 4"]
 
+occ_runs = [np.load(masked_dir + run) for run in occipital_data]
 
-
-# Prepare the neural data for correlation, grouping together runs
+# Prepare the neural data for correlation, grouping together runs, regressing out 
+# occipital signal from A1
 neural_prepped = []
 for i in  np.arange(int(len(neural_runs)/2)) :
-	neural_prepped.append(corr_prep(neural_runs[2*i], neural_runs[2*i+1]))
+	neural_prepped.append(corr_prep(neural_runs[2*i], neural_runs[2*i+1], occ_runs[2*i], occ_runs[2*i+1], regress=True))
 
 # Figure out which rows in the features have zero variance (results in nans in correlation)
 n_rows = features[0].shape[0]
@@ -151,10 +154,10 @@ roi = "hrf_rA1_regressed"
 corrs_path = Path(save_dir + roi + "slide_corrs.npy")
 full_slide_corrs_path = Path(save_dir + roi + "full_length_slide_corrs.npy")
 	
-if not(corrs_path.exists()) :
-	np.save(corrs_path, corrs)
-if not(full_slide_corrs_path.exists()) :
-	np.save(full_slide_corrs_path, sliding_corrs)
+#if not(corrs_path.exists()) :
+#	np.save(corrs_path, corrs)
+#if not(full_slide_corrs_path.exists()) :
+#	np.save(full_slide_corrs_path, sliding_corrs)
 
 
 
