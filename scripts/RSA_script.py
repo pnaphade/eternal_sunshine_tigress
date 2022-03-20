@@ -40,6 +40,10 @@ if data_choice == "rA1" :
         neural_runs = [np.load(masked_dir + run) for run in rA1_data]
         corr_labels = ["Music rA1", "No Music rA1"]
 
+if data_choice == "brainstem" :
+        neural_runs = [np.load(masked_dir + run) for run in brainstem_data]
+        corr_labels = ["Music Brainstem", "No Music Brainstem"]
+
 if data_choice == "dmn" :
         neural_runs = [np.load(masked_dir + run) for run in dmn_data]
         corr_labels = ["Music DMNa", "No Music DMNa"]
@@ -51,13 +55,17 @@ if data_choice == "random" :
                 neural_runs.append(rand_data)
         corr_labels = ["random 1", "random 2", "random 3", "random 4"]
 
+if data_choice == "occipital_pole" :
+        neural_runs = [np.load(masked_dir + run) for run in occipital_data]
+        corr_labels = ["Music Occipital Pole", "No Music Occipital"]
+
 occ_runs = [np.load(masked_dir + run) for run in occipital_data]
 
 # Prepare the neural data for correlation, grouping together runs, regressing out 
 # occipital signal from A1
 neural_prepped = []
 for i in  np.arange(int(len(neural_runs)/2)) :
-        neural_prepped.append(corr_prep(neural_runs[2*i], neural_runs[2*i+1], occ_runs[2*i], occ_runs[2*i+1], regress=True))
+       neural_prepped.append(corr_prep(neural_runs[2*i], neural_runs[2*i+1], occ_runs[2*i], occ_runs[2*i+1], regress=True))
 
 # Figure out which rows in the features have zero variance (results in nans in correlation)
 n_rows = features[0].shape[0]
