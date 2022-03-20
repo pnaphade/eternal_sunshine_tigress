@@ -25,8 +25,8 @@ def RSA(data_1, data_2, sliding_window=False, window_width=None) :
         -------
         results (tuple) :
                 A tuple containing both RSMs as two dimensional ndarrays, the between-RSM
-                correlation, the associated p-value, and the local correlations if 
-                sliding_window is True. 
+                correlation, the associated p-value, and the local correlations and standard
+                deviations if sliding_window is True. 
         """
 
         # Handle errors
@@ -65,7 +65,7 @@ def RSA(data_1, data_2, sliding_window=False, window_width=None) :
         n_windows = n_trs - window_width
         sliding_corrs = np.zeros(n_windows)
         sliding_pvals = np.zeros_like(sliding_corrs)
-        
+        sliding_stds = np.zeros_like(sliding_corrs) 
 
         # Check that window_width is less than the length of the dataset
         if window_width >= n_trs :
@@ -83,12 +83,13 @@ def RSA(data_1, data_2, sliding_window=False, window_width=None) :
                 win_2_triu = win_2[triu_idx]
                 # Compute the Pearson correlation and p value
                 sliding_corrs[i], sliding_pvals[i]  = stats.pearsonr(win_1_triu, win_2_triu)
-        
+                sliding_stds[i] = stats.tstd(win_1_triu)
+                
         # Average the statistics over the windows
         avg_corr, avg_pval = np.mean(sliding_corrs), np.mean(sliding_pvals)
 
         # Store results in tuple and return
-        results = (RSM_1, RSM_2, avg_corr, avg_pval, sliding_corrs)
+        results = (RSM_1, RSM_2, avg_corr, avg_pval, sliding_corrs, sliding_stds)
         return results
 
         
