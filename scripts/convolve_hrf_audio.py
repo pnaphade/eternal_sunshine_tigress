@@ -9,7 +9,7 @@ import glob
 
 # Load in the audio features, transpose in preparation for correlation
 feat_dir = "/tigress/pnaphade/Eternal_Sunshine/results/RSA/"
-feat_paths = glob.glob(os.path.join(feat_dir, "es*"))
+feat_paths = glob.glob(os.path.join(feat_dir, "main*"))
 features = [np.load(path) for path in feat_paths]
 
 # Pull out the labels of each feature from their filepaths using regex
