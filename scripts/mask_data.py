@@ -4,15 +4,15 @@ import nibabel as nib
 maskdir = '/tigress/pnaphade/Eternal_Sunshine/scripts/rois/'
 
 # Choose desired  mask
-roi = maskdir + 'erez_dmna_25mm_smooth_bin.nii.gz'
-roiname = 'dmnA'
+roi = maskdir + 'rA1_mask_25mm.nii.gz'
+roiname = 'rA1'
 
 # music group
-music_subjs = ['sub-002','sub-003','sub-005','sub-008','sub-010','sub-011','sub-013','sub-015','sub-017','sub-019','sub-021','sub-023']
+music_subjs = ['sub-002','sub-003','sub-005','sub-008','sub-010','sub-011','sub-013','sub-015','sub-017','sub-019','sub-021','sub-023', 'sub-025', 'sub-027','sub-030', 'sub-032', 'sub-034', 'sub-035', 'sub-037', 'sub-039', 'sub-042', 'sub-044', 'sub-046', 'sub-048', 'sub-050']
 
-no_music_subjs = ['sub-001','sub-004','sub-006','sub-007','sub-009','sub-012','sub-014','sub-016','sub-018','sub-020','sub-022']
+no_music_subjs = ['sub-001','sub-004','sub-006','sub-007','sub-009','sub-012','sub-014','sub-016','sub-018','sub-020','sub-022', 'sub-024', 'sub-026', 'sub-028', 'sub-029', 'sub-031', 'sub-033', 'sub-036', 'sub-038', 'sub-040', 'sub-041', 'sub-043', 'sub-045', 'sub-047', 'sub-049']
 
-watch_fn = ['_clean_watch_run1.nii.gz','_clean_watch_run2.nii.gz']
+watch_fn = ['_clean_watch_run1_smooth.nii.gz','_clean_watch_run2_smooth.nii.gz']
 
 
 datadir = '/tigress/jamalw/Eternal_Sunshine/data/'
