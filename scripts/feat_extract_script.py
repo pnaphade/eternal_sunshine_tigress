@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib
 import matplotlib.pyplot as plt
 import librosa as lb
 import librosa.display
@@ -7,7 +8,7 @@ import pathlib
 
 
 # Load in the movie audio
-audio_filepath = "/tigress/pnaphade/Eternal_Sunshine/data/es_audio.mp3"
+audio_filepath = "/tigress/pnaphade/Eternal_Sunshine/data/main_title.mp3"
 
 
 # The features we can extract
@@ -26,7 +27,7 @@ for feature in features :
 # Save the features
 save_dir = "/tigress/pnaphade/Eternal_Sunshine/results/RSA/"
 for feature, i in zip(es_features, np.arange(n_feats)) :
-	feat_path = pathlib.Path(save_dir + "es_" + features[i] + ".npy")
+	feat_path = pathlib.Path(save_dir + "main_title_" + features[i] + ".npy")
 	if not(feat_path.exists()) :
 		np.save(feat_path, feature)
 
