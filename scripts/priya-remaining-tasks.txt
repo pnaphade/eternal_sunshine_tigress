@@ -1,3 +1,5 @@
+Github: https://github.com/pnaphade/eternal_sunshine_tigress
+
 1) Perform RSA using chromagrams made just from music (not movie audio, which contains music + speech/background noise)
 
 	* I already have made a chromagram for the Main Title scene (the scene when Joel is crying in his car, after he throws
