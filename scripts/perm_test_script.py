@@ -2,14 +2,39 @@ import numpy as np
 import scipy.stats as stats
 import matplotlib.pyplot as plt
 from RSA_functions import chop
+import phase_scramble
 
-# Load in the data
-results_dir = "/tigress/pnaphade/Eternal_Sunshine/results/"
-RSMs = np.load(results_dir + "RSMs.npy")
-neural_RSMs = RSMs[:4]
-audio_RSM = RSMs[4]
-real_rvals = np.load(results_dir + "RSM_corrs.npy")
+# Load in the audio features, transpose in preparation for correlation
+feat_dir = "/tigress/pnaphade/Eternal_Sunshine/results/RSA/"
 
+# Load in hrf-convolved audio features, pull out labels
+feat_paths = glob.glob(feat_dir + "hrf_es*")
+features = [np.load(path).T for path in feat_paths]
+feat_labels = [re.search('es_(.+?).npy', path).group(1) for path in feat_paths]
+
+# Load in neural data
+masked_dir = "/tigress/pnaphade/Eternal_Sunshine/scripts/rois/masked_data/"
+rA1_data = ["music/rA1_run1_n12.npy", "music/rA1_run2_n12.npy","no_music/rA1_run1_n11.npy", "no_music/rA1_run2_n11.npy"]
+neural_runs = [np.load(masked_dir + run) for run in rA1_data]
+corr_labels = ["Music rA1", "No Music rA1"]
+
+print("hello")
+
+neural_prepped = []
+for i in  np.arange(int(len(neural_runs)/2)) :
+            neural_prepped.append(corr_prep(neural_runs[2*i], neural_runs[2*i+1], occ_runs[2*i], occ_runs[2*i+1], regress=True))
+
+# Phase shuffle the neural data
+test_data = neural_prepped[0]
+'''
+for data in neural_prepped :
+    _check_timeseries_input(data)
+    phase_randomize(data)
+
+'''
+
+# The code below was for when I was simply shuffling the columns of the audio RSM (not using phase shuffling).
+# Instead, use the phase_randomize function, started above. Then, reperform RSA with phase-randomized neural data.
 '''
 # Variables for sliding window correlations
 n_rois = 4
@@ -18,8 +43,6 @@ window_width = 30
 n_windows = n_trs - window_width
 n_perms = 1000
 
-# Random generator for shuffling audio data
-rng = np.random.default_rng()
 
 # Check for errors in parameters
 if n_perms <= 0 :
@@ -41,6 +64,20 @@ for n in range(n_perms) :
 	print(f"Computing correlations for permutation {n+1} of {n_perms}")	
 	
 	for i in range(n_windows) :
+        ad in the audio features, transpose in preparation for correlation
+        feat_dir = "/tigress/pnaphade/Eternal_Sunshine/results/RSA/"
+
+        # Load in hrf-convolved audio features, pull out labels
+        feat_paths = glob.glob(feat_dir + "hrf_es*")
+        features = [np.load(path).T for path in feat_paths]
+        feat_labels = [re.search('es_(.+?).npy', path).group(1) for path in feat_paths]
+
+        # Load in neural data
+        masked_dir = "/tigress/pnaphade/Eternal_Sunshine/scripts/rois/masked_data/"
+
+        A1_data = ["music/a1plus_run1_smooth_n25.npy", "music/a1plus_run2_smooth_n25.npy", "no_music/a1plus_run1_smooth_n25.npy","no_music/a1plus_run2_smooth_n25.npy"]
+
+        rA1_data = ["music/rA1_run1_n12.npy", "music/rA1_run2_n12.npy","no_music/rA1_run1_n11.npy", "no_music/rA1_run2_n11.npy"]
 	
 		# Isolate the current window for the neural and audio RSMs
 		audio_win_shuf = chop(audio_corr, i, i+window_width)
