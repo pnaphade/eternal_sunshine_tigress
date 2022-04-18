@@ -1,0 +1,23 @@
+1) Perform RSA using chromagrams made just from music (not movie audio, which contains music + speech/background noise)
+
+	* I already have made a chromagram for the Main Title scene (the scene when Joel is crying in his car, after he throws
+	the cassette tape out of his window)
+
+	* For other potential scenes of interest, if an mp3 can be found online (I found Main Title on YouTube then I used a YouTube
+	to mp3 converter), then you can use feat_extract_script.py to create a spectrogram, mel-scaled spectrogram, chromagram, and
+	the mfccs.
+
+
+2) Perform RSA including post-covid subjects (it would also be interesting to see only post-covid subjects)
+
+	* The only reason I wasn't able to get to this was running into errors masking ROIs for the new subjects
+
+	* Got the error "could not broadcast input array from shape (1320,3224) into shape (1320,3212)" on line 33
+	of mask_data.py. So for some reason run2[mask == 1] has the wrong value in its second dimension. This could
+	be because I'm using the wrong mask? (I could not find a smoothed version of the rA1, could this be why?)
+
+
+3) Perform a statistical test (a t test?) to see if the difference between music correlations and no music correlations is significant.
+
+	* Perform at every timepoint for sliding correlations - there are likely times in the movie where the correlations are
+	too similar to be significantly different and also times where there is a significant difference.
