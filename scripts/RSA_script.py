@@ -12,9 +12,10 @@ import xlrd
 feat_dir = "/tigress/pnaphade/Eternal_Sunshine/results/RSA/"
 
 # Load in hrf-convolved audio features, pull out labels
-feat_paths = glob.glob(feat_dir + "hrf_es*")
+##### These audio features are just for the "Main Title" song (from youtube, no other background noise) #####
+feat_paths = glob.glob(feat_dir + "hrf_main*")
 features = [np.load(path).T for path in feat_paths]
-feat_labels = [re.search('es_(.+?).npy', path).group(1) for path in feat_paths]
+feat_labels = [re.search('hrf_main_title_(.+?).npy', path).group(1) for path in feat_paths]
 
 # Load in neural data
 masked_dir = "/tigress/pnaphade/Eternal_Sunshine/scripts/rois/masked_data/"
@@ -59,6 +60,7 @@ if data_choice == "occipital_pole" :
         neural_runs = [np.load(masked_dir + run) for run in occipital_data]
         corr_labels = ["Music Occipital Pole", "No Music Occipital"]
 
+# unconditionally load in occipital pole data for regression
 occ_runs = [np.load(masked_dir + run) for run in occipital_data]
 
 # Prepare the neural data for correlation, grouping together runs, regressing out 
@@ -79,12 +81,18 @@ zero_var_rows = dict(zip(feat_labels, n_zero_var_rows))
 
 # Chop off the appropriate values in the features and neural data for consistency
 for i in np.arange(len(neural_prepped)) : 
-        neural_prepped[i] = neural_prepped[i][5:, :]            
+        neural_prepped[i] = neural_prepped[i][1:, :]            
 
 for i in np.arange(len(features)) :
-        features[i] = features[i][5:, :] 
+        features[i] = features[i][1:, :] 
 
 # Ensure all data has the same number of timepoints
+# for main title, we're only interested in looking at a chunk of the 
+# neural data
+for neural_dat in neural_prepped :
+    neural_dat = neural_dat[1095:1176, :]
+    print(neural_dat.shape)
+
 time_data = features + neural_prepped
 timepoints = time_data[0].shape[0]
 for dataset in time_data :
@@ -168,9 +176,8 @@ full_slide_corrs_path = Path(save_dir + roi + "full_length_slide_corrs.npy")
 
 
 
+###### Music Scene correlations ######
 '''
-# Music Scene correlations
-
 # Read the Scene Song Notations workbook
 music_times_path = "/tigress/pnaphade/Eternal_Sunshine/data/scene_song_notations.xlsx"
 music_times_wb = xlrd.open_workbook(music_times_path)
@@ -199,7 +206,7 @@ onset_sec = np.asarray([to_seconds(val) for val in onset_vals])
 offset_sec = np.asarray([to_seconds(val) for val in offset_vals])
 
 # Adjust 4 seconds forward due to beginning silence
-onset_sec, offset_sec = onset_sec-4, offset_sec-4
+onset_sec, offset_sec = onset_sec-1, offset_sec-1
 n_music = len(onset_sec)
 
 # Adjust offset_sec for time
