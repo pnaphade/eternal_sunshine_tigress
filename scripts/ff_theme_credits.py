@@ -3,34 +3,40 @@ import matplotlib.pyplot as plt
 
 # Load in the data (chromagram is the 3rd feature)
 data_dir = "/tigress/pnaphade/Eternal_Sunshine/results/RSA/"
+# which audio feature we want to use
+f = 0
+A1_corrs = np.load(data_dir + "hrf_A1_full_length_slide_corrs.npy")[f, :, :]
+rA1_stds = np.load(data_dir + "rA1_slide_stds.npy")[f, :, :]
+rA1_regcorrs = np.load(data_dir + "rA1_reg_slide_corrs.npy")[f, :, :]
+rA1_regstds = np.load(data_dir+ "rA1_reg_slide_stds.npy")[f, :, :]
 
-A1_corrs = np.load(data_dir + "hrf_A1_full_length_slide_corrs.npy")[2, :, :]
-rA1_stds = np.load(data_dir + "rA1_slide_stds.npy")[2, :, :]
-rA1_regcorrs = np.load(data_dir + "rA1_reg_slide_corrs.npy")[2, :, :]
-rA1_regstds = np.load(data_dir+ "rA1_reg_slide_stds.npy")[2, :, :]
+bs_corrs = np.load(data_dir + "hrf_bs_full_length_slide_corrs.npy")[f, :, :]
+bs_stds = np.load(data_dir + "bs_slide_stds.npy")[f, :, :]
+bs_regcorrs = np.load(data_dir + "bs_reg_slide_corrs.npy")[f, :, :]
+bs_regstds = np.load(data_dir + "bs_reg_slide_stds.npy")[f, :, :]
 
-bs_corrs = np.load(data_dir + "hrf_bs_full_length_slide_corrs.npy")[2, :, :]
-bs_stds = np.load(data_dir + "bs_slide_stds.npy")[2, :, :]
-bs_regcorrs = np.load(data_dir + "bs_reg_slide_corrs.npy")[2, :, :]
-bs_regstds = np.load(data_dir + "bs_reg_slide_stds.npy")[2, :, :]
+dmn_corrs = np.load(data_dir + "hrf_dmnA_full_length_slide_corrs.npy")[f, :, :]
+dmn_stds = np.load(data_dir + "dmn_slide_stds.npy")[f, :, :]
+dmn_regcorrs = np.load(data_dir + "dmn_reg_slide_corrs.npy")[f, :, :]
+dmn_regstds = np.load(data_dir + "dmn_reg_slide_stds.npy")[f, :, :]
 
-dmn_corrs = np.load(data_dir + "hrf_dmnA_full_length_slide_corrs.npy")[2, :, :]
-dmn_stds = np.load(data_dir + "dmn_slide_stds.npy")[2, :, :]
-dmn_regcorrs = np.load(data_dir + "dmn_reg_slide_corrs.npy")[2, :, :]
-dmn_regstds = np.load(data_dir + "dmn_reg_slide_stds.npy")[2, :, :]
+# Music/no music correlations over focus feature theme and theme
+# 0:00 to 1:35, but only go in 60s because of sliding windows and not including
+#first 5 s of silence in the movie (rA1, chroma)
+t1 = 1051 # how far into the movie should we look?
+t2 = 1117
+rA1mus_rc = rA1_regcorrs[0, t1:t2]
+rA1nomus_rc = rA1_regcorrs[1, t1:t2]
+rA1mus_rstd = rA1_regstds[0, t1:t2]/2
+rA1nomus_rstd = rA1_regstds[1, t1:t2]/2
 
-# Music/no music correlations over focus feature theme (rA1, chroma)
-rA1mus_rc = rA1_regcorrs[0, 0:13]
-rA1nomus_rc = rA1_regcorrs[1, 0:13]
-rA1mus_rstd = rA1_regstds[0, 0:13]/2
-rA1nomus_rstd = rA1_regstds[1, 0:13]/2
+rA1mus_c = A1_corrs[0, t1:t2]
+rA1nomus_c = A1_corrs[1, t1:t2]
+rA1mus_std = rA1_stds[0, t1:t2]
+rA1nomus_std = rA1_stds[1, t1:t2]
 
-rA1mus_c = A1_corrs[0, 0:13]
-rA1nomus_c = A1_corrs[1, 0:13]
-rA1mus_std = rA1_stds[0, 0:13]
-rA1nomus_std = rA1_stds[1, 0:13]
-
-time = np.linspace(0, 13, 13)
+del_t = t2-t1
+time = np.linspace(0, del_t, del_t)
 fig1, ax = plt.subplots()
 ax.plot(time, rA1mus_rc, 'b', label="Music, regressed") # music rA1
 ax.fill_between(time, rA1mus_rc+rA1mus_rstd, rA1mus_rc-rA1mus_rstd, color='b', alpha=0.1) 
@@ -43,7 +49,7 @@ ax.legend()
 #fig1.show()
 
 # rA1, brainstem, dmn, occipital pole correlations over focus feature theme
-
+'''
 bsmus_rc = bs_regcorrs[0, 0:13]
 bsnomus_rc = bs_regcorrs[1, 0:13]
 bsmus_rstd = bs_regstds[0, 0:13]/2
@@ -90,3 +96,4 @@ ax.set_xlabel("TR")
 ax.legend()
 
 #fig3.show()
+'''
